@@ -9,23 +9,31 @@ if(!location.search){
   window.addEventListener('message',e=>{if(e.source!==frame.contentWindow||e.origin!==location.origin)return;results.textContent+=e.data+'\n';next();});next();
 }else{
   document.documentElement.style.height=document.body.style.height='100%';
-  document.body.innerHTML='<canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><button id="fusion"></button><button id="leaves"></button><button id="pause"></button><span id="fps"></span></aside>';
+  document.body.innerHTML='<canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><button id="fusion"></button><button id="tension"></button><button id="leaves"></button><button id="pause"></button><span id="fps"></span></aside>';
   const canvas=document.getElementById('water'),gl=canvas.getContext('webgl',{alpha:false,antialias:false,depth:false,stencil:false});
-  let frames=0,white=0,reported=false;const originalDraw=gl.drawElements.bind(gl);
+  let frames=0,white=0,reported=false,arrays=0;const originalDraw=gl.drawElements.bind(gl),originalArrays=gl.drawArrays.bind(gl);
   gl.drawElements=function(...args){
-    originalDraw(...args);const w=canvas.width,h=canvas.height,n=6;
+    originalDraw(...args);arrays=0;
+  };
+  gl.drawArrays=function(...args){
+    originalArrays(...args);if(++arrays!==42)return;
+    const w=canvas.width,h=canvas.height,n=6;
     for(const [x,y,width,height]of[[0,0,n,h],[w-n,0,n,h],[0,0,w,n],[0,h-n,w,n]]){
       const pixels=new Uint8Array(width*height*4);gl.readPixels(x,y,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
       for(let i=0;i<pixels.length;i+=4)if(Math.min(pixels[i],pixels[i+1],pixels[i+2])>245)white++;
     }
     if(++frames===36){reported=true;window.wallpaperPropertyListener.setPaused(true);
-      parent.postMessage(`${white?'FAIL':'PASS'} ${innerWidth}x${innerHeight}: ${white} white border pixels / ${frames} frames; GL error ${gl.getError()}`,location.origin);}
+      const error=gl.getError();parent.postMessage(`${white||error?'FAIL':'PASS'} ${innerWidth}x${innerHeight}: ${white} white border pixels / ${frames} complete frames (including menisci); GL error ${error}`,location.origin);}
   };
   async function load(src){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src+'?check='+Date.now();s.onload=resolve;s.onerror=reject;document.body.append(s);});}
   (async()=>{
-    await load('../wallpaper-hd/assets.js');await load('../wallpaper-hd/world.js');
+    await load('../wallpaper-hd/assets.js');await load('../wallpaper-hd/world.js');await load('../wallpaper-hd/meniscus.js');
     const Original=WaterHD.World;
     WaterHD.World=class extends Original{
+      constructor(aspect){
+        super(aspect,()=>.42);
+        for(let i=0;i<4;i++){this.leaves[i].x=(i%2?1:-1)*(this.width/2-.02);this.leaves[i].y=(i<2?1:-1)*(this.height/2-.02);}
+      }
       update(){}
       mesh(){
         this.time=.25+(frames%18)*.12;this.waves=[];

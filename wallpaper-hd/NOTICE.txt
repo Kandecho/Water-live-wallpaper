@@ -1,4 +1,4 @@
-Water HD — Water & Leaf Study 01, 2026
+Water HD — Meniscus Study 02, 2026
 
 Original textures and the reference leaf behavior come from AOSP Basic.
 Copyright (C) 2009 The Android Open Source Project.
@@ -17,6 +17,8 @@ This study adds a new compact analytic wave profile with exact derivatives,
 shared water/leaf lighting, a soft contact-shadow atlas created at startup,
 premultiplied texture sampling, a gentle analytic flow field, smoothed leaf
 response, drag input, and time-based animation up to 60 FPS.
+Study 02 also derives a padded distance/gradient atlas from the original alpha and
+uses a local meniscus gradient to distort a GPU copy of the rendered water.
 It is not intended as an exact reproduction of the original RenderScript.
 No new HD leaf artwork, fluid solver or physical soft-body simulation is used.
 The separately maintained classic version remains available in wallpaper/.

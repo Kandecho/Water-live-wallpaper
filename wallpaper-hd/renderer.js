@@ -1,7 +1,7 @@
-/* Water HD study 01. Small mesh + analytic waves + premultiplied sprites. Apache-2.0. */
+/* Water HD study 02. Analytic waves + alpha-derived menisci. Apache-2.0. */
 'use strict';
 const canvas=document.getElementById('water'),panel=document.getElementById('controls');
-const options={fusion:true,leaves:true,paused:false};
+const options={fusion:true,tension:true,leaves:true,paused:false};
 let enginePaused=false,fpsLimit=60,last=0,budget=0,redraw=()=>{};
 panel.hidden=!new URLSearchParams(location.search).has('preview');
 window.wallpaperPropertyListener={
@@ -10,21 +10,23 @@ window.wallpaperPropertyListener={
 };
 document.addEventListener('visibilitychange',()=>{last=0;budget=0;});
 function controls(){
-  for(const key of ['fusion','leaves','pause']){
+  for(const key of ['fusion','tension','leaves','pause']){
     const value=key==='pause'?options.paused:options[key],button=document.getElementById(key);
     button.setAttribute('aria-pressed',String(value));
-    button.textContent=key==='fusion'?'融合效果：'+(value?'开':'关'):key==='leaves'?'叶子：'+(value?'显示':'隐藏'):(value?'继续':'暂停');
+    button.textContent=key==='fusion'?'光照 / 轻摆：'+(value?'开':'关'):key==='tension'?'弯月面：'+(value?'开':'关'):key==='leaves'?'叶子：'+(value?'显示':'隐藏'):(value?'继续':'暂停');
   }
 }
 function toggle(key){options[key]=!options[key];if(key==='paused'){last=0;budget=0;}controls();redraw();}
 document.getElementById('fusion').onclick=()=>toggle('fusion');
+document.getElementById('tension').onclick=()=>toggle('tension');
 document.getElementById('leaves').onclick=()=>toggle('leaves');
 document.getElementById('pause').onclick=()=>toggle('paused');
 window.addEventListener('keydown',e=>{
-  if(e.repeat||e.target.tagName==='BUTTON')return;
+  if(e.repeat||(e.code==='Space'&&e.target.tagName==='BUTTON'))return;
   if(e.code==='Space'){toggle('paused');e.preventDefault();}
   if(e.code==='KeyH')panel.hidden=!panel.hidden;
   if(e.code==='KeyC')toggle('fusion');if(e.code==='KeyL')toggle('leaves');
+  if(e.code==='KeyT')toggle('tension');
 });
 async function start(){
   const gl=canvas.getContext('webgl',{alpha:false,antialias:false,depth:false,stencil:false});
@@ -59,6 +61,45 @@ async function start(){
       color+=fusion*(color*diffuse*.13+vec3(.78,.87,.96)*sheen*.15);
       gl_FragColor=vec4(color,1.);
     }`,['position','surface'],['image','crop','worldSize','light','fusion']);
+  const contact=program(`
+    attribute vec2 position;attribute vec3 surface;
+    uniform vec2 center;uniform mediump vec2 worldSize;uniform mediump vec2 tilt;
+    uniform mediump float angle;uniform mediump float size;
+    varying vec2 uv;varying vec2 screen;varying vec3 wave;
+    void main(){
+      vec2 q=position*size*(191./127.);
+      q=mat2(cos(angle),sin(angle),-sin(angle),cos(angle))*q;
+      q.x+=q.y*tilt.x*.20;q.y*=1.-abs(tilt.y)*.24;
+      screen=(center+q)/worldSize+.5;gl_Position=vec4(screen*2.-1.,0.,1.);
+      uv=vec2(position.x*.5+.5,.5-position.y*.5);wave=surface;
+    }`,`
+    precision mediump float;uniform sampler2D image;uniform sampler2D field;
+    uniform vec2 pixel;uniform vec2 worldSize;uniform vec3 light;
+    uniform float sprite;uniform float angle;uniform float size;uniform vec2 tilt;uniform float fusion;
+    varying vec2 uv;varying vec2 screen;varying vec3 wave;
+    void main(){
+      vec4 f=texture2D(field,vec2((sprite*192.+.5+uv.x*191.)/1536.,(.5+uv.y*191.)/192.));
+      float d=f.r*32.;
+      float mask=1.-smoothstep(20.,29.,d);if(mask<.001)discard;
+      // A shallow depression h=-depth*exp(-distance/width), fading into the pond.
+      // The derivative bends reflections and normals, rather than painting a rim.
+      vec2 grad=(f.gb*2.-1.)*vec2(1.,-1.);
+      grad*=.013*exp(-d/7.5)/(7.5*2.*size/127.);
+      grad=mat2(cos(angle),sin(angle),-sin(angle),cos(angle))*grad;
+      // Inverse transpose of the same shear/squash used for the leaf pose.
+      grad.y=(grad.y-tilt.x*.20*grad.x)/(1.-abs(tilt.y)*.24);
+      // Warp a copy of the rendered water: zero local slope gives the exact base
+      // pixel, even when a strong ripple crosses the patch. No rectangular seams.
+      vec3 c=texture2D(image,clamp(screen-grad*.10/worldSize,pixel,1.-pixel)).rgb;
+      vec3 n=normalize(vec3(-(wave.xy+grad)*.85,1.)),base=normalize(vec3(-wave.xy*.85,1.));
+      vec3 halfLight=normalize(light+vec3(0.,0.,1.));
+      float diffuse=dot(n,light)-dot(base,light);
+      float sheen=pow(max(dot(n,halfLight),0.),42.)-pow(max(dot(base,halfLight),0.),42.);
+      c+=fusion*(c*diffuse*.13+vec3(.78,.87,.96)*sheen*.15);
+      // Contact remains legible against smooth sky, with a directional light/dark pair.
+      c+=vec3(.65,.77,.82)*(dot(n,light)-dot(base,light))*.20;
+      gl_FragColor=vec4(c*mask,mask);
+    }`,['position','surface'],['image','field','pixel','worldSize','light','center','tilt','angle','size','sprite','fusion']);
   const leaf=program(`
     attribute vec2 position;uniform vec2 center;uniform vec2 worldSize;uniform mediump vec2 tilt;
     uniform float angle;uniform float size;uniform float perspective;varying vec2 uv;
@@ -90,7 +131,14 @@ async function start(){
     return tex;
   }
   const [pondImage,leafImage]=await Promise.all([load(WaterAssets.pond),load(WaterAssets.leaves)]);
-  const pond=texture(pondImage),leaves=texture(leafImage);
+  const pond=texture(pondImage),leaves=texture(leafImage),waterSnapshot=texture(pondImage);
+  const maskCanvas=document.createElement('canvas');maskCanvas.width=1024;maskCanvas.height=128;
+  const maskContext=maskCanvas.getContext('2d',{willReadFrequently:true});maskContext.drawImage(leafImage,0,0);
+  const fieldData=WaterContact.atlas(maskContext.getImageData(0,0,1024,128).data);
+  const fieldCanvas=document.createElement('canvas');fieldCanvas.width=fieldData.width;fieldCanvas.height=fieldData.height;
+  fieldCanvas.getContext('2d').putImageData(new ImageData(fieldData.data,fieldData.width,fieldData.height),0,0);
+  const contactField=texture(fieldCanvas),contactSurface=gl.createBuffer(),contactSamples=new Float32Array(12);
+  gl.bindBuffer(gl.ARRAY_BUFFER,contactSurface);gl.bufferData(gl.ARRAY_BUFFER,contactSamples.byteLength,gl.DYNAMIC_DRAW);
   // Prepare one soft alpha atlas at startup; no per-frame blur or new art assets.
   const shadowCanvas=document.createElement('canvas');shadowCanvas.width=1024;shadowCanvas.height=128;
   const ctx=shadowCanvas.getContext('2d');
@@ -105,6 +153,9 @@ async function start(){
   function resize(){
     const ratio=innerWidth/innerHeight,dpr=Math.min(devicePixelRatio||1,2);
     canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);gl.viewport(0,0,canvas.width,canvas.height);
+    gl.bindTexture(gl.TEXTURE_2D,waterSnapshot);
+    // Match the opaque (alpha:false) drawing buffer for WebGL 1 copy compatibility.
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,canvas.width,canvas.height,0,gl.RGB,gl.UNSIGNED_BYTE,null);
     world.resize(ratio);const {cols,rows}=world,p=[],ix=[];
     for(let y=0;y<=rows;y++)for(let x=0;x<=cols;x++)p.push(x/cols*2-1,y/rows*2-1);
     for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
@@ -129,7 +180,22 @@ async function start(){
     gl.uniform1f(leaf.size,LEAF_SIZE*l.scale*(shadow?1.025+a*.12:1));
     gl.uniform1f(leaf.perspective,shadow?1:2/(2-a));
     gl.uniform1f(leaf.sprite,l.sprite);gl.uniform1f(leaf.shadow,shadow?1:0);
-    gl.uniform1f(leaf.opacity,opacity*(shadow?(contact?.25:.17):1));
+    gl.uniform1f(leaf.opacity,opacity*(shadow?(contact?(options.tension?.07:.25):.17):1));
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  function drawContact(l){
+    const tiltX=options.fusion?l.slopeX:0,tiltY=options.fusion?l.slopeY:0;
+    const angle=l.angle+tiltX*.22,size=LEAF_SIZE*l.scale,c=Math.cos(angle),s=Math.sin(angle);
+    const y=l.y+(options.fusion?l.bob*.45:0),extent=size*191/127;
+    let i=0;
+    for(const [px,py] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
+      let qx=(px*c-py*s)*extent,qy=(px*s+py*c)*extent;
+      qx+=qy*tiltX*.20;qy*=1-Math.abs(tiltY)*.24;
+      world.sample(l.x+qx,y+qy,contactSamples,i);i+=3;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER,contactSurface);gl.bufferSubData(gl.ARRAY_BUFFER,0,contactSamples);
+    gl.uniform2f(contact.center,l.x,y);gl.uniform2f(contact.tilt,tiltX,tiltY);
+    gl.uniform1f(contact.angle,angle);gl.uniform1f(contact.size,size);gl.uniform1f(contact.sprite,l.sprite);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
   function draw(){
@@ -142,6 +208,18 @@ async function start(){
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indices);gl.drawElements(gl.TRIANGLES,count,gl.UNSIGNED_SHORT,0);
     gl.disableVertexAttribArray(water.surface);
     if(!options.leaves)return;
+    gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+    if(options.tension){
+      gl.bindTexture(gl.TEXTURE_2D,waterSnapshot);
+      gl.copyTexSubImage2D(gl.TEXTURE_2D,0,0,0,0,0,canvas.width,canvas.height);
+      gl.useProgram(contact.p);attribute(contact.position,quad,2);attribute(contact.surface,contactSurface,3);
+      gl.uniform1i(contact.image,0);gl.uniform1i(contact.field,1);
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,contactField);gl.activeTexture(gl.TEXTURE0);
+      gl.uniform2f(contact.pixel,.5/canvas.width,.5/canvas.height);gl.uniform2f(contact.worldSize,world.width,world.height);
+      gl.uniform3fv(contact.light,LIGHT);gl.uniform1f(contact.fusion,options.fusion?1:0);
+      for(const l of world.leaves)if(l.altitude===0)drawContact(l);
+      gl.disableVertexAttribArray(contact.surface);
+    }
     gl.useProgram(leaf.p);attribute(leaf.position,quad,2);gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(leaf.image,0);
     gl.uniform2f(leaf.worldSize,world.width,world.height);gl.uniform3fv(leaf.light,LIGHT);gl.uniform1f(leaf.fusion,options.fusion?1:0);
