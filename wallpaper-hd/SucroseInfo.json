@@ -1,0 +1,21 @@
+{
+  "AppVersion": "26.10.05.0",
+  "Version": "0.1.0.0",
+  "Title": "Water HD — Study 01",
+  "Thumbnail": "preview.jpg",
+  "Preview": "preview.jpg",
+  "Description": "Water HD study 01: original AOSP artwork with shared water lighting, soft contact shadows, gently coupled leaf motion, and click/drag ripples. Prototype; no new HD leaf artwork.",
+  "Author": "Kandecho / AOSP",
+  "License": "LICENSE.txt",
+  "Contact": "https://github.com/Kandecho/Water-live-wallpaper",
+  "Type": 2,
+  "Source": "index.html",
+  "Tags": [
+    "Nature",
+    "Water",
+    "Autumn",
+    "Classic"
+  ],
+  "Arguments": null,
+  "Localization": null
+}

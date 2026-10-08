@@ -1,0 +1,24 @@
+Water HD — Water & Leaf Study 01, 2026
+
+Original textures and the reference leaf behavior come from AOSP Basic.
+Copyright (C) 2009 The Android Open Source Project.
+Desktop adaptation and HD study maintained by Kandecho.
+Licensed under Apache License 2.0; see LICENSE.txt.
+
+Pinned upstream commit: 74e84e6cbea39c5946d86d93460f753e03a90607
+https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbea39c5946d86d93460f753e03a90607/
+Upstream paths: res/drawable-hdpi/pond.jpg, res/drawable-hdpi/leaves.png,
+res/raw/fall.rs, src/com/android/wallpaper/fall/FallRS.java.
+
+The original image bytes are unchanged and embedded in assets.js.
+preview.jpg is a browser screenshot of this study, not new artwork.
+
+This study adds a new compact analytic wave profile with exact derivatives,
+shared water/leaf lighting, a soft contact-shadow atlas created at startup,
+premultiplied texture sampling, a gentle analytic flow field, smoothed leaf
+response, drag input, and time-based animation up to 60 FPS.
+It is not intended as an exact reproduction of the original RenderScript.
+No new HD leaf artwork, fluid solver or physical soft-body simulation is used.
+The separately maintained classic version remains available in wallpaper/.
+
+Independent recreation, not an official Samsung or Google product.

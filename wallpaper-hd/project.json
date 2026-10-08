@@ -1,0 +1,10 @@
+{
+  "title": "Water HD — Study 01",
+  "preview": "preview.jpg",
+  "type": "web",
+  "general": {
+    "properties": {}
+  },
+  "file": "index.html",
+  "description": "Water HD study 01: original AOSP artwork with shared water lighting, soft contact shadows, gently coupled leaf motion, and click/drag ripples. Prototype; no new HD leaf artwork."
+}
