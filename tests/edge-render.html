@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Water edge regression</title>
+<style>html,body{margin:0}canvas{display:block;width:100%;height:100%}iframe{border:0}#error{color:red}#results{font:16px monospace;white-space:pre-wrap}</style>
+<body><script>
+if (!location.search) {
+  const sizes=[[1280,720],[480,800],[2560,720]];
+  const results=document.createElement('pre');results.id='results';document.body.append(results);
+  const frame=document.createElement('iframe');document.body.append(frame);
+  let index=0;
+  function next(){
+    if(index===sizes.length){frame.remove();results.textContent+='DONE\n';return;}
+    const [width,height]=sizes[index++];frame.width=width;frame.height=height;frame.src='?case='+width+'x'+height;
+  }
+  window.addEventListener('message',e=>{
+    if(e.source!==frame.contentWindow || e.origin!==location.origin)return;
+    results.textContent+=e.data+'\n';next();
+  });next();
+} else {
+  document.documentElement.style.height=document.body.style.height='100%';
+  const canvas=document.createElement('canvas');canvas.id='water';document.body.append(canvas);
+  const error=document.createElement('p');error.id='error';error.hidden=true;document.body.append(error);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:false,depth:false,stencil:false});
+  const draw=gl.drawElements.bind(gl);
+  let frames=0,whitePixels=0,reported=false;
+  // Read immediately after the production water draw, before any leaf overlay.
+  gl.drawElements=function(...args){
+    draw(...args);
+    const w=canvas.width,h=canvas.height,n=8;
+    for(const [x,y,width,height] of [[0,0,n,h],[w-n,0,n,h],[0,0,w,n],[0,h-n,w,n]]){
+      const pixels=new Uint8Array(width*height*4);gl.readPixels(x,y,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+      for(let i=0;i<pixels.length;i+=4)if(Math.min(pixels[i],pixels[i+1],pixels[i+2])>240)whitePixels++;
+    }
+    if(++frames===32){
+      reported=true;window.wallpaperPropertyListener.setPaused(true);
+      parent.postMessage(`${whitePixels?'FAIL':'PASS'} ${innerWidth}x${innerHeight}: ${whitePixels} white edge pixels across ${frames} water frames`,location.origin);
+    }
+  };
+  async function load(src){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src+'?edge-test='+Date.now();script.onload=resolve;script.onerror=reject;document.body.append(script);});}
+  (async()=>{
+    await load('../wallpaper/assets.js');await load('../wallpaper/simulation.js');
+    const Original=WaterSimulation.WaterWorld;
+    WaterSimulation.WaterWorld=class extends Original{
+      update(){} // Deterministic test waves; production ripple math is unchanged.
+      rippleMesh(){
+        const positions=[[.98,.5],[.02,.5],[.5,.02],[.5,.98],[.98,.02],[.98,.98],[.02,.02],[.02,.98],[.5,.5],[.7,.4]];
+        this.drops.forEach((d,i)=>Object.assign(d,{x:positions[i][0],y:positions[i][1],amp:frames<16?2:.3,radius:1+(frames%16)*2+i*.7}));
+        return super.rippleMesh();
+      }
+    };
+    await load('../wallpaper/renderer.js');
+  })().catch(e=>{reported=true;parent.postMessage('ERROR '+e,location.origin);});
+  setTimeout(()=>{if(!reported)parent.postMessage('ERROR timeout: '+error.textContent,location.origin);},15000);
+}
+</script></body></html>

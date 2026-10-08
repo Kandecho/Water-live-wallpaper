@@ -36,8 +36,9 @@ async function start() {
     precision mediump float; uniform sampler2D image; uniform vec4 crop; varying vec2 uv;
     void main(){
       vec2 p=crop.xy+vec2(uv.x,1.-uv.y)*crop.zw;
-      // The source is padded above/right. Never sample its white padding.
-      p=clamp(p,vec2(.5/1024.,224.5/1024.),vec2(959.5/1024.,1023.5/1024.));
+      // Column 959 is already white in the original JPEG. Stop one texel inside
+      // the last valid column (958), so linear filtering cannot pick up padding.
+      p=clamp(p,vec2(.5/1024.,224.5/1024.),vec2(957.5/1024.,1023.5/1024.));
       gl_FragColor=texture2D(image,p);
     }`);
   const leaf=program(`

@@ -68,6 +68,8 @@ node --check wallpaper/simulation.js
 
 The simulation checks compare the analytic wave and triangle normals against independent formulas, exercise landing and drift, run ten simulated minutes, and check portrait through 32:9 grids. They do not replace visual or engine compatibility testing.
 
+For the browser edge regression, serve the repository (for example, `python -m http.server 8000`), then open `http://localhost:8000/tests/edge-render.html`. It checks the rendered pond border at 16:9, portrait, and 32:9 with strong and weak waves. All three cases should report zero white edge pixels.
+
 The classic recreation is the only version implemented so far. A future enhanced version can live alongside it without changing the classic entry point.
 
 ## Sources and license
