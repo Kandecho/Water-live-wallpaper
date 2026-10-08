@@ -8,6 +8,10 @@ Built with the original AOSP textures and ripple algorithm, adapted for Windows.
 
 ## Try it
 
+**Wallpaper Engine:** [View on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983).
+
+Uploaded on October 9, 2026. Public availability may depend on Steam's review; approval has not yet been confirmed.
+
 Download the repository, then open `wallpaper/index.html` in a WebGL-capable browser. No dependencies, build step, server, or network connection are required.
 
 - Click the water to make a ripple.
@@ -19,9 +23,9 @@ For desktop use:
 | --- | --- |
 | Sucrose | Build the Sucrose ZIP, drag it into the library, then choose **Use**. |
 | Lively | Build the Lively ZIP and import it into the library. |
-| Wallpaper Engine | Create a web wallpaper in the editor using `wallpaper/index.html`, then save it as a local project. |
+| Wallpaper Engine | Subscribe via [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983), once publicly available. To use the source locally, create a web wallpaper from `wallpaper/index.html` in the editor. |
 
-The repository includes metadata for all three engines. Browser rendering, click input, and pause/resume have been checked. A Sucrose installation is in use by the maintainer; formal desktop compatibility testing across all three engines is still pending. Desktop input forwarding depends on the engine's settings and focus.
+The repository includes metadata for all three engines. Browser rendering, click input, and pause/resume have been checked. The maintainer uses Sucrose and has imported the project into Wallpaper Engine and uploaded it to Steam Workshop. Full compatibility testing across all three engines is still pending. Desktop input forwarding depends on the engine's settings and focus.
 
 When published, ready-made packages will be available under [Releases](https://github.com/Kandecho/Water-live-wallpaper/releases). GitHub's automatic source ZIP is the whole repository, not an engine import package.
 
