@@ -1,7 +1,8 @@
-Water (Autumn Leaves) — Classic desktop recreation
+Water (Autumn Leaves) 1.0.1 — Classic desktop recreation
 
 Open index.html in a WebGL-capable browser. Click for ripples; Space pauses.
 No dependencies, server, or network connection are required.
+Rendering is capped at approximately 33 FPS and respects lower Wallpaper Engine FPS settings.
 
 Sucrose: import the Sucrose ZIP into the library, then choose Use.
 Lively: import the Lively ZIP into the library.

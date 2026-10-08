@@ -25,9 +25,9 @@ For desktop use:
 | Lively | Build the Lively ZIP and import it into the library. |
 | Wallpaper Engine | Subscribe via [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983). To use the source locally, create a web wallpaper from `wallpaper/index.html` in the editor. |
 
-The repository includes metadata for all three engines. Browser rendering, click input, and pause/resume have been checked. The maintainer uses Sucrose and has imported the project into Wallpaper Engine and uploaded it to Steam Workshop. Full compatibility testing across all three engines is still pending. Desktop input forwarding depends on the engine's settings and focus.
+The repository includes metadata for all three engines. Browser rendering, click input, and pause/resume have been checked. The maintainer uses Sucrose and has imported the project into Wallpaper Engine and uploaded it to Steam Workshop. Full compatibility testing across all three engines is still pending. Desktop input forwarding depends on the engine's settings and focus. Rendering is capped at approximately 33 FPS; a lower Wallpaper Engine FPS setting is respected. This setting belongs to each user and is not bundled with the wallpaper.
 
-When published, ready-made packages will be available under [Releases](https://github.com/Kandecho/Water-live-wallpaper/releases). GitHub's automatic source ZIP is the whole repository, not an engine import package.
+Download the **[1.0.1 stable release](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/v1.0.1)** for ready-made Sucrose and Lively import packages. GitHub's automatic source ZIP is the whole repository, not an engine import package.
 
 ## Build import packages
 
@@ -37,7 +37,7 @@ On Windows with PowerShell 7:
 pwsh -NoProfile -File scripts/package.ps1
 ```
 
-This writes `Water-Original-Sucrose-1.0.0.zip` and `Water-Original-Lively-1.0.0.zip` into `dist/`. Runtime files sit at the ZIP root. Generated packages are excluded from Git; attach them to a Release when ready.
+This writes `Water-Original-Sucrose-1.0.1.zip` and `Water-Original-Lively-1.0.1.zip` into `dist/`. Runtime files sit at the ZIP root. Generated packages are excluded from Git; attach them to a Release when ready.
 
 ## How it works
 
