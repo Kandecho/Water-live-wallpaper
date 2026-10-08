@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Water (Autumn Leaves)</title>
+<style>
+  html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#203c58; }
+  canvas { display:block; width:100%; height:100%; touch-action:none; outline-offset:-4px; }
+  #error { position:fixed; inset:40% 10% auto; color:white; font:16px/1.7 system-ui; text-align:center; }
+</style>
+<canvas id="water" tabindex="0" aria-label="Water (Autumn Leaves). Click for ripples. Press Space to pause or resume."></canvas>
+<p id="error" role="alert" hidden></p>
+<script src="assets.js"></script>
+<script src="simulation.js"></script>
+<script src="renderer.js"></script>
+</html>

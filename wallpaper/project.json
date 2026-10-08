@@ -1,0 +1,10 @@
+{
+  "title": "Water (Autumn Leaves)",
+  "description": "A desktop recreation of the classic Android \"Water\" live wallpaper from the 2009–2010 era. Autumn leaves drift across a reflective pond, with ripples responding to your touch. Built with the original AOSP textures and ripple algorithm, adapted for Windows.",
+  "type": "web",
+  "file": "index.html",
+  "preview": "preview.jpg",
+  "general": {
+    "properties": {}
+  }
+}

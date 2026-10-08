@@ -1,0 +1,32 @@
+Water / Fall — desktop adaptation, 2026
+
+Based on Android Open Source Project Basic live wallpapers.
+Copyright (C) 2009 The Android Open Source Project.
+Licensed under Apache License 2.0 (LICENSE.txt).
+
+Pinned upstream commit:
+74e84e6cbea39c5946d86d93460f753e03a90607
+https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbea39c5946d86d93460f753e03a90607/
+
+Sources used:
+  res/raw/fall.rs
+  src/com/android/wallpaper/fall/FallRS.java
+  res/drawable-hdpi/pond.jpg
+  res/drawable-hdpi/leaves.png
+  res/drawable-hdpi/water_thumb.jpg
+
+Original image bytes are base64-embedded in assets.js, unchanged.
+preview.jpg is a screenshot of the desktop adaptation. The original thumbnail is preserved in reference/original-assets/water_thumb.jpg in the source repository.
+No assets or rendering code from Reborn Android Live Wallpapers were copied.
+
+Changes from RenderScript:
+  WebGL 1 renderer and JavaScript CPU ripple mesh.
+  Fixed 30 ms simulation step with time-scaled rotation.
+  Bounds-safe normal computation at mesh edges.
+  Upright widescreen framing with aspect-preserving center crop.
+  Fourteen leaves distributed across one desktop viewport; no Android launcher
+  pages, horizontal launcher scrolling, or 90-degree landscape rotation.
+  Texture sampling constrained to the image region (excluding source padding).
+  Desktop click/touch input, keyboard pause, and engine lifecycle hooks.
+
+This is an independent recreation, not an official Samsung or Google product.
