@@ -1,44 +1,42 @@
-Water HD — Meniscus Study 02 (prototype 0.2.1)
+Water HD — Light & Canopy Study 03 (prototype 0.3.0)
 
-This prototype uses the UNCHANGED original AOSP background and leaf atlas.
-No new HD leaf artwork is included. It is separate from classic release 1.0.1.
+Original AOSP leaf and pond artwork with restrained directional lighting,
+soft canopy shade, narrow leaf-edge menisci and interactive ripples.
+No new HD leaf artwork. Separate from the classic 1.0.1 release.
 
-Preview: open preview.html in a WebGL browser for the comparison panel.
-Wallpaper: use index.html for a clean screen without the panel.
+PREVIEW: open preview.html for the comparison panel.
+WALLPAPER: use index.html for a clean screen.
+Click / drag: ripples. Space: pause. H: panel. All switches work while paused.
+C: lighting. S: canopy. B: leaf motion. T: local menisci. L: leaves.
 
-Click: a spreading ripple. Hold and drag: a restrained trail of ripples.
-Space: pause/resume. H: panel. T: meniscus on/off. C: lighting/tilt. L: leaves.
-Pause and toggle T to compare the exact same scene with and without menisci.
-The FPS indicator measures render calls, not full desktop GPU performance.
+Light: cool ambient fill plus a gentle warm key light. Leaf normals describe a
+rounded main vein and shallow folds. A fixed, soft canopy map attenuates only
+the key light; it follows scene position, not leaf UVs or wave displacement.
+The canopy is an artistic approximation extracted from the reflected trees,
+not a geometrically recovered shadow projection.
 
-Surface-tension appearance: each original leaf has three small contact patches,
-chosen as plausible low points of a gently curled leaf and snapped to its alpha
-contour. These choices are art direction, not a reconstruction of 3D geometry.
-The depression decays over 2.4 source pixels and ends within 8 pixels, instead of
-the previous broad 29-pixel rim. Its complete height gradient includes the ends
-of each wet patch, so they taper naturally into the dry edge. Contact patches
-remain fixed to the leaf as it drifts/rotates; passing waves change their shading.
-The T comparison toggles only the meniscus, keeping the soft shadow constant.
+Contact: three small, contour-snapped patches per original leaf. Their local
+height gradient distorts the pond reflection within 8 source pixels of the
+edge. No capillary attraction, true deformation or wetting simulation.
 
-The auxiliary height/gradient atlas is made once at startup from the unchanged
-original alpha. Its gradient bends a GPU copy of the rendered water and changes
-directional illumination. Airborne leaves have no meniscus; contact starts on
-landing. No replacement artwork is generated.
+All auxiliary maps are PRECOMPUTED and included. The wallpaper loads textures
+only; no image extraction or blur runs at startup. Rebuild scripts are retained
+in the source repository. Original bitmap bytes remain unchanged.
 
-This is a visual capillary approximation, not a surface-tension force solver:
-leaves do not attract/cluster, deform, wet progressively, or couple their menisci.
-The original low-resolution leaf artwork and flat interior shading remain.
-The snapshot pass costs one screen-sized RGB texture and one GPU copy per frame
-when menisci and leaves are enabled. There is no CPU pixel readback per frame.
+TUNING: settings.js groups light, water, leaf, contact, drift and input controls.
+Rendering order: water -> menisci -> soft shadows -> leaves.
+Simulation, shaders, rendering and engine/input handling are separate modules.
+Architecture and extraction: docs/hd-architecture.md in the source repository.
 
 Timing is independent of rendering FPS, up to 60 FPS. Wallpaper Engine respects
-your global FPS setting. No external dependencies or internet access are needed.
-Native engine compatibility and 4K desktop performance still need target testing.
+your global FPS setting. The preview FPS meter counts render calls, not GPU time.
+Browser checks passed; native engine compatibility and 4K performance still
+need testing on the target desktop. No runtime dependencies or internet access.
 
-Sucrose: drag this ZIP into its library and choose Use.
-Lively: import this ZIP into its library (not yet tested in Lively).
-Wallpaper Engine: extract the ZIP and create a NEW project from index.html.
-Do not replace the published classic Workshop project with this study.
+Sucrose: drag this ZIP into the library.
+Lively: import the ZIP (not yet tested in Lively).
+Wallpaper Engine: extract and create a NEW project from index.html.
+Keep the published classic Workshop project separate.
 
 Source: https://github.com/Kandecho/Water-live-wallpaper/tree/main/wallpaper-hd
 License and provenance: LICENSE.txt and NOTICE.txt.

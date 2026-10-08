@@ -70,17 +70,17 @@ The simulation checks compare the analytic wave and triangle normals against ind
 
 For the browser edge regression, serve the repository (for example, `python -m http.server 8000`), then open `http://localhost:8000/tests/edge-render.html`. It checks the rendered pond border at 16:9, portrait, and 32:9 with strong and weak waves. All three cases should report zero white edge pixels.
 
-## Water HD — Study 02
+## Water HD — Study 03
 
-An independent visual prototype is available in [`wallpaper-hd/`](wallpaper-hd/). It retains the original background and leaf artwork while exploring contour-following menisci, shared water lighting, subtle leaf response, and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
+An independent visual prototype is available in [`wallpaper-hd/`](wallpaper-hd/). It retains the original artwork while adding directional leaf lighting, soft canopy shade, narrow local menisci, and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
 
-Open `wallpaper-hd/preview.html` for the comparison panel, or `wallpaper-hd/index.html` for a clean wallpaper. Press **Space** to pause, **T** to toggle menisci, **C** to toggle lighting/tilt, **L** to hide leaves, and **H** to show the panel. The toggles also work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
+Open `wallpaper-hd/preview.html` for the grouped comparison panel, or `wallpaper-hd/index.html` for a clean wallpaper. **C** toggles lighting, **S** canopy shade, **B** leaf motion, **T** local menisci, **L** leaves, **Space** pause, and **H** the panel. Switches work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
 
-Build its separate import package with `pwsh -NoProfile -File scripts/package-hd.ps1`. This creates `dist/Water-HD-Study-02.zip`. Create a **new** Wallpaper Engine project for the study instead of overwriting the published classic item.
+All auxiliary maps are generated offline and committed. There is no image processing at startup. Edit `wallpaper-hd/settings.js` to tune the look; only changes to extracted maps require `python scripts/build-hd-maps.py` (Python + Pillow and Node.js). See [HD architecture and extraction](docs/hd-architecture.md) for responsibilities, parameters and checks.
 
-The meniscus is a visual approximation: a local height field derived from leaf alpha bends the existing pond reflection and lighting at three small contact patches on each floating leaf. It adds one screen-sized texture and GPU copy when enabled; it does not simulate capillary attraction, wetting, or leaf deformation.
+Build its separate package with `pwsh -NoProfile -File scripts/package-hd.ps1`, producing `dist/Water-HD-Study-03.zip`. Create a **new** Wallpaper Engine project instead of overwriting the published classic item.
 
-Checks: `node tests/hd-contact.cjs` covers contour gradients and atlas isolation. `node tests/hd-world.cjs` covers wave normals, frame-rate-independent timing, and long-running state. Serve the repository and open `tests/hd-render.html` for rendered border checks. `tests/hd-contact-sequence.html` provides all eight sprites with fixed 0.25-second steps for checking contact during drift, rotation, and passing ripples. Browser interaction and 16:9 / portrait / 32:9 rendering passed; native wallpaper engine behavior and 4K performance still need target-system testing.
+Checks cover analytic motion, local contact fields, reproducible offline maps, world-position canopy sampling, independent switches, zero runtime image baking, and 16:9 / portrait / 32:9 border rendering. Native engine compatibility and 4K performance still require target-system testing.
 
 ## Sources and license
 

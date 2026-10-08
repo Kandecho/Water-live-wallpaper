@@ -1,0 +1,39 @@
+<!doctype html><html><meta charset="utf-8"><title>Water HD lighting checks</title>
+<style>body{background:#152833;color:#eef3ed;font:15px/1.5 monospace}canvas{width:640px;height:360px}pre{white-space:pre-wrap}</style>
+<pre id="results">Running…</pre><canvas id="water"></canvas>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script>
+(async()=>{
+  const results=document.getElementById('results'),canvas=document.getElementById('water'),lines=[];
+  function check(ok,message){lines.push((ok?'PASS':'FAIL')+' '+message);results.textContent=lines.join('\n');if(!ok)throw Error(message);}
+  // Detect any accidental reintroduction of runtime image baking.
+  const original=HTMLCanvasElement.prototype.getContext;let canvases2D=0;
+  HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='2d')canvases2D++;return original.call(this,type,...args);};
+  const world=new WaterHD.World(16/9,()=>.42),options=Object.fromEntries(WaterSettings.features.map(f=>[f.key,f.enabled]));
+  world.waves=[];world.time=0;world.leaves=world.leaves.slice(0,1);
+  Object.assign(world.leaves[0],{x:0,y:0,angle:0,sprite:3,scale:.6,slopeX:0,slopeY:0,bob:0});
+  const renderer=await WaterRenderer.create(canvas,world,options);renderer.resize(640,360,1);
+  const gl=canvas.getContext('webgl'),size=640*360*4;
+  function pixels(){renderer.draw();const data=new Uint8Array(size);gl.readPixels(0,0,640,360,gl.RGBA,gl.UNSIGNED_BYTE,data);return data;}
+  function difference(a,b){let sum=0;for(let i=0;i<size;i++)sum+=Math.abs(a[i]-b[i]);return sum;}
+  function attenuation(u,v){
+    world.leaves[0].x=(u-.5)*world.width;world.leaves[0].y=(.5-v)*world.height;
+    options.canopy=false;const off=pixels();options.canopy=true;const on=pixels();
+    let drop=0;for(let i=0;i<size;i++)drop+=off[i]-on[i];return drop;
+  }
+  check(canvases2D===0,'zero Canvas2D contexts during runtime initialization');
+  const shaded=attenuation(.30,.35),open=attenuation(.52,.90);
+  check(shaded>open*1.5&&open>=0,`world-position canopy sampling: shaded=${shaded}, open=${open}`);
+  options.canopy=true;const first=pixels();options.canopy=false;pixels();options.canopy=true;
+  check(difference(first,pixels())===0,'canopy toggle restores the exact same frame');
+  options.leaves=false;const pond=pixels();options.canopy=false;
+  check(difference(pond,pixels())===0,'canopy does not darken the reflected background');
+  options.leaves=true;options.lighting=false;const unlit=pixels();options.canopy=true;
+  check(difference(unlit,pixels())===0,'canopy affects lighting only');
+  options.lighting=true;options.motion=false;const still=pixels();world.leaves[0].slopeX=.25;world.leaves[0].slopeY=-.2;
+  check(difference(still,pixels())===0,'motion switch is independent of leaf lighting');
+  options.motion=true;check(difference(still,pixels())>0,'leaf pose responds when motion is enabled');
+  check(gl.getError()===0,'WebGL reports no errors');
+  results.textContent+='\nDONE';
+})().catch(e=>{document.getElementById('results').textContent+='\nERROR '+e.message;console.error(e);});
+</script></html>

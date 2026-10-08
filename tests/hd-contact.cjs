@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {distance,atlas,TILE,PAD}=require('../wallpaper-hd/meniscus.js');
+const {distance,atlas,TILE,PAD}=require('../scripts/lib/meniscus.cjs');
 const alpha=new Uint8Array(11*11);alpha[5*11+5]=255;
 const d=distance(alpha,11,11);
 assert.equal(d[5*11+5],0);assert.equal(d[5*11+9],4);

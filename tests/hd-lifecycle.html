@@ -1,0 +1,29 @@
+<!doctype html><html><meta charset="utf-8"><title>Water HD engine lifecycle checks</title>
+<style>body{font:14px monospace}#water{width:640px;height:360px}#controls{display:none}pre{white-space:pre-wrap}</style>
+<pre id="results">Running…</pre><canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><div id="feature-controls"></div><span id="fps"></span></aside>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script>
+(async()=>{
+  const out=document.getElementById('results'),lines=[];
+  function check(ok,message){lines.push((ok?'PASS':'FAIL')+' '+message);out.textContent=lines.join('\n');if(!ok)throw Error(message);}
+  const frames=n=>new Promise(resolve=>{function next(){if(--n===0)resolve();else requestAnimationFrame(next);}requestAnimationFrame(next);});
+  let world,draws=0,ready;
+  const firstDraw=new Promise(resolve=>ready=resolve),Original=WaterHD.World,create=WaterRenderer.create;
+  WaterHD.World=class extends Original{constructor(...args){super(...args);world=this;}};
+  WaterRenderer.create=async(...args)=>{const r=await create(...args);return {...r,draw(){r.draw();draws++;ready();}};};
+  const script=document.createElement('script');script.src='../wallpaper-hd/app.js';document.body.append(script);
+  await firstDraw;
+  window.wallpaperPropertyListener.setPaused(true);const frozen=world.time,before=draws;await frames(6);
+  check(world.time===frozen&&draws===before,'engine pause stops simulation and drawing');
+  window.wallpaperPropertyListener.setPaused(false);await frames(6);
+  check(world.time>frozen&&draws>before,'engine resume advances again');
+  document.getElementById('pause').click();const paused=world.time;await frames(3);
+  const comparison=draws;document.getElementById('canopy').click();
+  check(world.time===paused&&draws===comparison+1,'paused comparison redraws without advancing time');
+  document.getElementById('canopy').click();document.getElementById('pause').click();
+  window.wallpaperPropertyListener.applyGeneralProperties({fps:15});
+  const start=performance.now(),count=draws;await frames(24);const elapsed=performance.now()-start;
+  check(draws>count&&draws-count<=Math.ceil(elapsed*.015)+2,`engine FPS cap respected (${draws-count} draws / ${Math.round(elapsed)} ms)`);
+  window.wallpaperPropertyListener.setPaused(true);out.textContent+='\nDONE';
+})().catch(e=>{document.getElementById('results').textContent+='\nERROR '+e.message;console.error(e);});
+</script></html>

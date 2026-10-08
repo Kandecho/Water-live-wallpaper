@@ -9,7 +9,7 @@ if(!location.search){
   window.addEventListener('message',e=>{if(e.source!==frame.contentWindow||e.origin!==location.origin)return;results.textContent+=e.data+'\n';next();});next();
 }else{
   document.documentElement.style.height=document.body.style.height='100%';
-  document.body.innerHTML='<canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><button id="fusion"></button><button id="tension"></button><button id="leaves"></button><button id="pause"></button><span id="fps"></span></aside>';
+  document.body.innerHTML='<canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><div id="feature-controls"></div><span id="fps"></span></aside>';
   const canvas=document.getElementById('water'),gl=canvas.getContext('webgl',{alpha:false,antialias:false,depth:false,stencil:false});
   let frames=0,white=0,reported=false,arrays=0;const originalDraw=gl.drawElements.bind(gl),originalArrays=gl.drawArrays.bind(gl);
   gl.drawElements=function(...args){
@@ -27,7 +27,7 @@ if(!location.search){
   };
   async function load(src){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src+'?check='+Date.now();s.onload=resolve;s.onerror=reject;document.body.append(s);});}
   (async()=>{
-    await load('../wallpaper-hd/assets.js');await load('../wallpaper-hd/world.js');await load('../wallpaper-hd/meniscus.js');
+    await load('../wallpaper-hd/assets.js');await load('../wallpaper-hd/maps.js');await load('../wallpaper-hd/settings.js');await load('../wallpaper-hd/world.js');
     const Original=WaterHD.World;
     WaterHD.World=class extends Original{
       constructor(aspect){
@@ -43,7 +43,7 @@ if(!location.search){
         return super.mesh();
       }
     };
-    await load('../wallpaper-hd/renderer.js');
+    await load('../wallpaper-hd/shaders.js');await load('../wallpaper-hd/renderer.js');await load('../wallpaper-hd/app.js');
   })().catch(e=>{reported=true;parent.postMessage('ERROR '+e,location.origin);});
   setTimeout(()=>{if(!reported)parent.postMessage('ERROR timeout: '+document.getElementById('error').textContent,location.origin);},15000);
 }
