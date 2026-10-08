@@ -1,4 +1,4 @@
-Water HD — Meniscus Study 02 (prototype 0.2.0)
+Water HD — Meniscus Study 02 (prototype 0.2.1)
 
 This prototype uses the UNCHANGED original AOSP background and leaf atlas.
 No new HD leaf artwork is included. It is separate from classic release 1.0.1.
@@ -11,12 +11,19 @@ Space: pause/resume. H: panel. T: meniscus on/off. C: lighting/tilt. L: leaves.
 Pause and toggle T to compare the exact same scene with and without menisci.
 The FPS indicator measures render calls, not full desktop GPU performance.
 
-Surface-tension appearance: an alpha-derived distance/gradient atlas is created
-once at startup, with padding around each original leaf cell. A shallow local
-depression decays away from each floating leaf's silhouette. Its gradient bends
-the already-rendered pond reflection and changes directional illumination.
-The reduced contact shadow avoids doubling the dark rim. Airborne leaves have
-no meniscus; contact begins on landing. The atlas is auxiliary data, not new art.
+Surface-tension appearance: each original leaf has three small contact patches,
+chosen as plausible low points of a gently curled leaf and snapped to its alpha
+contour. These choices are art direction, not a reconstruction of 3D geometry.
+The depression decays over 2.4 source pixels and ends within 8 pixels, instead of
+the previous broad 29-pixel rim. Its complete height gradient includes the ends
+of each wet patch, so they taper naturally into the dry edge. Contact patches
+remain fixed to the leaf as it drifts/rotates; passing waves change their shading.
+The T comparison toggles only the meniscus, keeping the soft shadow constant.
+
+The auxiliary height/gradient atlas is made once at startup from the unchanged
+original alpha. Its gradient bends a GPU copy of the rendered water and changes
+directional illumination. Airborne leaves have no meniscus; contact starts on
+landing. No replacement artwork is generated.
 
 This is a visual capillary approximation, not a surface-tension force solver:
 leaves do not attract/cluster, deform, wet progressively, or couple their menisci.

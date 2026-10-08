@@ -79,12 +79,11 @@ async function start(){
     varying vec2 uv;varying vec2 screen;varying vec3 wave;
     void main(){
       vec4 f=texture2D(field,vec2((sprite*192.+.5+uv.x*191.)/1536.,(.5+uv.y*191.)/192.));
-      float d=f.r*32.;
-      float mask=1.-smoothstep(20.,29.,d);if(mask<.001)discard;
-      // A shallow depression h=-depth*exp(-distance/width), fading into the pond.
-      // The derivative bends reflections and normals, rather than painting a rim.
-      vec2 grad=(f.gb*2.-1.)*vec2(1.,-1.);
-      grad*=.013*exp(-d/7.5)/(7.5*2.*size/127.);
+      float mask=smoothstep(0.,.025,f.r);if(mask<.001)discard;
+      // R: local depression weight. GB: derivatives including the wet/dry ends.
+      // Only three pinned contact patches per leaf; the rest of its rim is dry.
+      vec2 grad=((f.gb*255.-128.)/127.)*.5*vec2(1.,-1.);
+      grad*=.0045/(2.*size/127.);
       grad=mat2(cos(angle),sin(angle),-sin(angle),cos(angle))*grad;
       // Inverse transpose of the same shear/squash used for the leaf pose.
       grad.y=(grad.y-tilt.x*.20*grad.x)/(1.-abs(tilt.y)*.24);
@@ -97,7 +96,7 @@ async function start(){
       float sheen=pow(max(dot(n,halfLight),0.),42.)-pow(max(dot(base,halfLight),0.),42.);
       c+=fusion*(c*diffuse*.13+vec3(.78,.87,.96)*sheen*.15);
       // Contact remains legible against smooth sky, with a directional light/dark pair.
-      c+=vec3(.65,.77,.82)*(dot(n,light)-dot(base,light))*.20;
+      c+=vec3(.65,.77,.82)*(dot(n,light)-dot(base,light))*.10;
       gl_FragColor=vec4(c*mask,mask);
     }`,['position','surface'],['image','field','pixel','worldSize','light','center','tilt','angle','size','sprite','fusion']);
   const leaf=program(`
@@ -180,7 +179,7 @@ async function start(){
     gl.uniform1f(leaf.size,LEAF_SIZE*l.scale*(shadow?1.025+a*.12:1));
     gl.uniform1f(leaf.perspective,shadow?1:2/(2-a));
     gl.uniform1f(leaf.sprite,l.sprite);gl.uniform1f(leaf.shadow,shadow?1:0);
-    gl.uniform1f(leaf.opacity,opacity*(shadow?(contact?(options.tension?.07:.25):.17):1));
+    gl.uniform1f(leaf.opacity,opacity*(shadow?(contact?.07:.17):1));
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
   function drawContact(l){

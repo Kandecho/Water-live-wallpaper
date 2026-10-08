@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Water HD contact sequence</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#203c58;font:13px system-ui}canvas{width:100%;height:100%;display:block}#controls{display:none}#sequence{position:fixed;bottom:12px;left:12px;padding:10px 14px;background:#10252af0;color:#eef2e4;border-radius:6px}button{font:inherit;padding:6px 10px;margin-left:8px}#error{position:fixed;top:0;background:#900;color:white}</style>
+<canvas id="water"></canvas><p id="error" hidden></p>
+<aside id="controls"><button id="fusion"></button><button id="tension"></button><button id="leaves"></button><button id="pause"></button><span id="fps"></span></aside>
+<aside id="sequence">8 original sprites · 1.67× normal leaf size · <output id="time">0.00 s</output><button id="advance">Advance 0.25 s</button><button id="contactToggle">Toggle contact</button><button id="reset">Reset</button></aside>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/meniscus.js"></script>
+<script>
+// Visual QA only. Production renderer; fixed seed, controlled physical time.
+const OriginalWorld=WaterHD.World;let current;
+WaterHD.World=class extends OriginalWorld{
+  constructor(aspect){super(aspect,()=>.42);current=this;this.setup();}
+  setup(){
+    this.time=0;this.waves=[];this.nextAmbient=100;
+    this.leaves=Array.from({length:8},(_,i)=>Object.assign(this.newLeaf(false),{
+      x:((i%4+.5)/4-.5)*this.width,y:(i<4?.65:-.65),sprite:i,scale:.75,
+      angle:[.1,-.2,.35,-.1,.2,.3,-.3,.15][i],spin:i%2?.085:-.07,phase:i*.7
+    }));
+    this.drop(.30,.34,1);document.getElementById('time').textContent='0.00 s';
+  }
+  update(){}
+  advance(){for(let i=0;i<15;i++)super.update(1/60);document.getElementById('time').textContent=this.time.toFixed(2)+' s';}
+};
+document.getElementById('advance').onclick=()=>current.advance();
+document.getElementById('reset').onclick=()=>current.setup();
+document.getElementById('contactToggle').onclick=()=>document.getElementById('tension').click();
+</script><script src="../wallpaper-hd/renderer.js"></script></html>

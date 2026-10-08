@@ -78,9 +78,9 @@ Open `wallpaper-hd/preview.html` for the comparison panel, or `wallpaper-hd/inde
 
 Build its separate import package with `pwsh -NoProfile -File scripts/package-hd.ps1`. This creates `dist/Water-HD-Study-02.zip`. Create a **new** Wallpaper Engine project for the study instead of overwriting the published classic item.
 
-The meniscus is a visual approximation: a distance field from leaf alpha bends the existing pond reflection and lighting around each floating silhouette. It adds one screen-sized texture and GPU copy when enabled; it does not simulate capillary attraction, wetting, or leaf deformation.
+The meniscus is a visual approximation: a local height field derived from leaf alpha bends the existing pond reflection and lighting at three small contact patches on each floating leaf. It adds one screen-sized texture and GPU copy when enabled; it does not simulate capillary attraction, wetting, or leaf deformation.
 
-Checks: `node tests/hd-contact.cjs` covers contour gradients and atlas isolation. `node tests/hd-world.cjs` covers wave normals, frame-rate-independent timing, and long-running state. Serve the repository and open `tests/hd-render.html` for rendered border checks. Browser interaction and 16:9 / portrait / 32:9 rendering passed; native wallpaper engine behavior and 4K performance still need target-system testing.
+Checks: `node tests/hd-contact.cjs` covers contour gradients and atlas isolation. `node tests/hd-world.cjs` covers wave normals, frame-rate-independent timing, and long-running state. Serve the repository and open `tests/hd-render.html` for rendered border checks. `tests/hd-contact-sequence.html` provides all eight sprites with fixed 0.25-second steps for checking contact during drift, rotation, and passing ripples. Browser interaction and 16:9 / portrait / 32:9 rendering passed; native wallpaper engine behavior and 4K performance still need target-system testing.
 
 ## Sources and license
 
