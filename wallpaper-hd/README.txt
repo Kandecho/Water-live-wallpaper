@@ -1,48 +1,52 @@
-Water HD — Floating Leaves Study 04 (prototype 0.4.0)
+Water (Autumn Leaves) HD — Preview 1
+Version: 0.1.0-preview.1 | Git tag: hd-v0.1.0-preview.1
 
-4K pond reflection, positional canopy shade, varied wet/dry leaf poses,
-narrow petiole/edge menisci and interactive ripples. Original leaf artwork
-remains a placeholder. Separate from the classic 1.0.1 release.
+An HD reinterpretation of the classic Android Water wallpaper. Original
+composition and leaf shapes are retained, with a 4K pond, 512px reconstructed
+leaves, positional canopy shade, subtle floating poses and local water contact.
+This is a preview release. The classic 1.0.1 wallpaper remains separate.
 
-PREVIEW: open preview.html for the comparison panel.
-WALLPAPER: use index.html for a clean screen.
-Click / drag: ripples. Space: pause. H: panel. All switches work while paused.
+INSTALL
+Sucrose: import this ZIP into the library.
+Lively: import this ZIP (native Lively testing is still pending).
+Wallpaper Engine: extract and create a NEW web wallpaper from index.html.
+Do not overwrite the classic Workshop project.
+Browser: open index.html directly; no server or network is needed.
+
+CONTROLS
+Click / drag water: ripples. Space: pause. H: comparison panel.
 C: lighting. S: canopy. B: wave-driven motion. T: menisci. L: leaves.
+Open preview.html to show the panel initially. Switches work while paused.
+There is no direct leaf dragging or cursor-following behavior.
 
-BACKGROUND: original AOSP pond, processed offline with RealESRNet at 2x then
-4x. The 4096x4096 atlas contains a 3832x3200 usable image with edge-extended
-padding. Composition and colors are retained; tiny silhouettes are simplified.
-No diffusion/image-gen. Mipmaps reduce shimmer at smaller display sizes.
+ART AND MOTION
+The original AOSP images were reconstructed offline using RealESRNet, with
+two 2x stages (4x inference followed by Lanczos reduction at each stage).
+The pond atlas is 4096x4096; its usable image is 3832x3200.
+Eight leaf cells are now 512x512, packed into a 4096x512 atlas. RGB edge
+cleanup precedes reconstruction. Original alpha preserves leaf shape and
+petioles, with tiny detached dust removed and bicubic resampling.
+This is reconstruction, not recovered photographic detail or new leaf art.
+No diffusion/image-gen was used. Both color atlases use mipmaps.
 
-LIGHT: one direction controls water, leaf normals, raised-part shadows and
-offline canopy projection. The canopy is selected by color and brightness,
-shifted away from the light, softened and remapped to keep open areas bright.
-It is art direction from reflections, not recovered 3D tree geometry.
-Only direct leaf light is attenuated; the background is not darkened twice.
+One shared light direction drives water and leaf lighting. An offline canopy
+map reduces direct leaf light according to world position. Three persistent
+floating poses control raised-part shadows and small wet contact patches.
+Waves affect leaf motion and contact loading. This is art-directed analytic
+motion, not a fluid solver or physical wetting simulation.
 
-CONTACT: a leaf receives one of three poses at birth: wet petiole / raised tip,
-raised petiole, or raised side. Its pose stays stable until it leaves the scene.
-Raised regions have no meniscus and a softer, fainter shadow. Short wet petiole
-segments and a few edge patches disturb the water. The same wave height that
-drives bobbing slightly modulates contact loading, without an independent
-oscillator or per-frame random wetting. No fluid or physical wetting solver.
+All images/maps are embedded. No extraction, blur, inference, model download,
+Python, Node, server or network is needed at startup.
+settings.js groups the artistic controls. Source repository documentation
+explains the optional offline extraction/upscale workflow.
 
-Maps and image bytes are PRECOMPUTED and embedded. No extraction, blur,
-model download, Python, Node, server or network is required at startup.
-TUNING: settings.js groups light, canopy extraction, leaf/contact poses,
-waves, drift and input. Extraction changes require rebuilding offline maps
-with the repository script; ordinary strength changes only require reload.
-Architecture: docs/hd-architecture.md in the source repository.
+Rendering is capped at 60 FPS and respects lower Wallpaper Engine settings.
+The preview meter counts render calls, not completed GPU frames. Browser
+checks include 4K, portrait and ultrawide layouts. Native engine compatibility
+and sustained 4K performance still need target-system testing.
 
-Timing is independent of rendering FPS, up to 60 FPS. Wallpaper Engine respects
-your global limit. The meter counts render calls, not GPU completion.
-Browser checks include 3840x2160 rendering; native engine compatibility and
-sustained 4K desktop performance still require testing on the target desktop.
+Next experiments: shared gentle gusts, then local leaf bending.
+Direct leaf-pushing interaction is not planned.
 
-Sucrose: drag this ZIP into the library.
-Lively: import the ZIP (not yet tested in Lively).
-Wallpaper Engine: extract and create a NEW project from index.html.
-Keep the published classic Workshop project separate.
-
-Source: https://github.com/Kandecho/Water-live-wallpaper/tree/main/wallpaper-hd
-License and provenance: LICENSE.txt and NOTICE.txt.
+Source: https://github.com/Kandecho/Water-live-wallpaper
+License and attribution: LICENSE.txt and NOTICE.txt.

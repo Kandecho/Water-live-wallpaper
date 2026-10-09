@@ -70,17 +70,27 @@ The simulation checks compare the analytic wave and triangle normals against ind
 
 For the browser edge regression, serve the repository (for example, `python -m http.server 8000`), then open `http://localhost:8000/tests/edge-render.html`. It checks the rendered pond border at 16:9, portrait, and 32:9 with strong and weak waves. All three cases should report zero white edge pixels.
 
-## Water HD — Study 04
+## Water HD — Preview 1
 
-An independent visual prototype is available in [`wallpaper-hd/`](wallpaper-hd/). It combines an approved 4K upscale of the original pond with unchanged placeholder leaf artwork, calibrated positional canopy shade, stable wet/dry leaf poses, wave-linked petiole menisci, and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
+**[Download the HD preview](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/hd-v0.1.0-preview.1)** — a separate pre-release, version `0.1.0-preview.1`.
 
-Open `wallpaper-hd/preview.html` for the grouped comparison panel, or `wallpaper-hd/index.html` for a clean wallpaper. **C** toggles lighting, **S** canopy shade, **B** leaf motion, **T** local menisci, **L** leaves, **Space** pause, and **H** the panel. Switches work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
+An HD reinterpretation is available in [`wallpaper-hd/`](wallpaper-hd/). It combines the 4K pond with 512px reconstructions of the eight original leaf sprites, positional canopy shade, varied floating poses, wave-linked petiole menisci and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
 
-All auxiliary maps are generated offline and committed. There is no image processing at startup. Edit `wallpaper-hd/settings.js` to tune the look; only changes to extracted maps require `python scripts/build-hd-maps.py` (Python + Pillow and Node.js). See [HD architecture and extraction](docs/hd-architecture.md) for responsibilities, parameters and checks.
+![Water HD Preview 1](docs/hd-preview.jpg)
 
-Build its separate package with `pwsh -NoProfile -File scripts/package-hd.ps1`, producing `dist/Water-HD-Study-04.zip`. Create a **new** Wallpaper Engine project instead of overwriting the published classic item.
+Import `Water-HD-0.1.0-preview.1.zip` into Sucrose or Lively. For Wallpaper Engine, extract it and create a **new web wallpaper** from `index.html`. This HD preview has not replaced the classic Steam Workshop item. GitHub's automatic source ZIP is not the import package.
 
-Checks cover analytic motion, local contact fields, reproducible offline maps, world-position canopy sampling, independent switches, zero runtime image baking, a fixed-angle leaf crossing light and shade, and 16:9 / portrait / 32:9 / 3840×2160 border rendering. Native engine compatibility and 4K performance still require target-system testing.
+Open `wallpaper-hd/preview.html` for comparison controls, or `wallpaper-hd/index.html` for a clean wallpaper. **C** toggles lighting, **S** canopy shade, **B** leaf motion, **T** local menisci, **L** leaves, **Space** pause, and **H** the panel. Switches work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
+
+All artwork and maps are prepared offline and embedded. No server, model, image processing or network is required at startup. Edit `wallpaper-hd/settings.js` to tune the look. See [HD architecture](docs/hd-architecture.md), [background provenance](docs/background-upscale.txt), and [leaf reconstruction](docs/leaf-upscale.txt).
+
+```powershell
+pwsh -NoProfile -File scripts/package-hd.ps1
+```
+
+This writes the HD ZIP and `Water-HD-SHA256SUMS.txt` to `dist/`. Checks cover analytic motion, contact fields, silhouette/petiole preservation, isolated shadows, reproducible maps, positional lighting, lifecycle hooks and 16:9 / portrait / ultrawide / 4K browser rendering. Native engine compatibility and sustained desktop performance still require target-system testing.
+
+Next experiments are shared gentle gusts, followed by local leaf bending. Direct leaf-pushing interaction is not planned. The accepted preview stays available as a baseline.
 
 ## Sources and license
 

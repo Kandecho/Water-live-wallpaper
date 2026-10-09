@@ -1,6 +1,6 @@
 # Water HD architecture
 
-Study 04 keeps prepared images, compact state and analytic motion, rendered
+HD Preview 1 keeps prepared images, compact state and analytic motion, rendered
 with plain JavaScript and WebGL 1. There is no fluid solver or runtime image
 extraction. The classic `wallpaper/` release remains independent.
 
@@ -11,14 +11,14 @@ extraction. The classic `wallpaper/` release remains independent.
 | `settings.js` | Artistic controls, offline canopy calibration, pose definitions and feature switches. |
 | `world.js` | Leaf lifetime/drift, stable wet/dry pose, analytic waves and delayed response. |
 | `shaders.js` | Water, contact and leaf/shadow programs, with a shared leaf transform. |
-| `renderer.js` | Textures, mesh, resize and ordered passes. One resting/wave pose is reused across leaves, shadows and contacts. |
+| `renderer.js` | Textures, mesh, resize and ordered passes. One resting/wave pose is computed per leaf per frame and reused across leaves, shadows and contacts. |
 | `app.js` | Input, preview controls, timer and engine pause/FPS hooks. |
-| `assets.js` | Generated embedded 4K pond and unchanged AOSP leaf artwork. |
+| `assets.js` | Generated embedded 4K pond and 512px reconstructed AOSP leaf cells. |
 | `maps.js` | Generated embedded canopy, wet/dry contact variants and shadow textures. |
 
 Each frame advances the world, then draws water → menisci → shadows → leaves.
 Menisci require one GPU copy of the rendered water. There is no CPU readback
-in the wallpaper. The 4K background uses mipmaps to reduce minification shimmer
+in the wallpaper. The pond and leaf color atlases use mipmaps to reduce minification shimmer
 and high-precision texture coordinates where supported. Images remain embedded
 for offline use, including direct local-file loading.
 
@@ -44,6 +44,14 @@ See [upscale provenance](background-upscale.txt). The optional
 `scripts/upscale-background.py` reproduces the two-stage upscale using separately
 downloaded official models. Model binaries are not bundled.
 
+The leaf atlas is `reference/derived/hd-leaves-4x.png` (4096×512). Each 128px
+source cell is reconstructed independently at 256px, then 512px. See
+[leaf provenance](leaf-upscale.txt) and `scripts/upscale-leaves.py`. Alpha
+cleanup preserves connected thin petioles. Color and shadow UVs use actual
+texture dimensions instead of assuming the original 128px color cells.
+Contact maps retain their compact 128px design coordinates, sampling the
+new alpha down to that scale; shadow alpha is sampled at 256px per cell.
+
 With Python + Pillow and Node.js, run from the repository root:
 
 ```sh
@@ -51,7 +59,7 @@ python scripts/build-hd-maps.py
 python scripts/build-hd-maps.py --check
 ```
 
-This derives maps from the 4K pond and original leaf alpha, then embeds PNGs and
+This derives maps from the 4K pond and reconstructed leaf alpha, then embeds PNGs and
 artwork. `--check` regenerates in memory and compares saved bytes. Normal users
 need none of these tools; neither extraction nor upscaling runs on startup.
 
@@ -65,7 +73,7 @@ need none of these tools; neither extraction nor upscaling runs on startup.
   Short contour patches and petiole segments taper within eight original pixels.
   Raised areas are suppressed using the same local pose axes as the renderer.
   R stores depression weight; GB stores its derivatives.
-- **Shadow, 1024×256:** each leaf alpha is blurred independently at two radii.
+- **Shadow, 2048×512:** each leaf alpha is blurred independently at two radii.
   Raised parts blend toward a softer, fainter shadow and shift away from the key;
   wet areas retain the tighter shadow.
 
@@ -92,6 +100,7 @@ lighting. There is no independent leaf oscillator, diffraction or wetting solver
 ```sh
 node tests/hd-world.cjs
 node tests/hd-contact.cjs
+python tests/hd-art.py
 python scripts/build-hd-maps.py --check
 ```
 
@@ -111,4 +120,10 @@ derivatives for all pose rows. Browser pages served from the repository:
   attenuation spans about 0–20% on this path.
 
 Browser checks do not establish native-engine compatibility or sustained 4K
-performance. Leaves remain the original low-resolution placeholder artwork.
+performance. Leaf shape remains anchored to the original alpha; reconstructed detail is not ground truth.
+
+## Scope after Preview 1
+
+Keep the accepted preview as a baseline. Experiment next with shared gentle
+gusts, then a small locally deformable leaf mesh. Direct leaf-pushing input
+is not planned; the wallpaper should stay quiet in the background.

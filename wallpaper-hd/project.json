@@ -1,10 +1,10 @@
 {
-  "title": "Water HD — Study 04",
+  "title": "Water (Autumn Leaves) HD — Preview 1",
   "preview": "preview.jpg",
   "type": "web",
   "general": {
     "properties": {}
   },
   "file": "index.html",
-  "description": "Water HD Study 04: a 4K pond reflection, calibrated positional canopy shade, varied wet/dry leaf poses and wave-linked petiole menisci. Original AOSP leaf artwork; offline maps and compact analytic motion."
+  "description": "An HD reinterpretation of the classic Android Water (Autumn Leaves) live wallpaper. A 4K pond and 512px reconstructed original leaves, positional canopy shade, subtle floating poses and local water contact. Preview release; no fluid solver or runtime image processing."
 }

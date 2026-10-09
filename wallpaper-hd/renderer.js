@@ -29,7 +29,7 @@ const WaterRenderer={async create(canvas,world,options){
   const [pondImage,leafImage,canopyImage,contactImage,shadowImage]=await Promise.all([
     load(WaterAssets.pond),load(WaterAssets.leaves),load(WaterMaps.canopy),load(WaterMaps.contact),load(WaterMaps.shadow)
   ]);
-  const pond=texture(pondImage,true),leaves=texture(leafImage),waterSnapshot=gl.createTexture();
+  const pond=texture(pondImage,true),leaves=texture(leafImage,true),waterSnapshot=gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D,waterSnapshot);
   for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
   for(const key of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,key,gl.CLAMP_TO_EDGE);
@@ -68,9 +68,9 @@ const WaterRenderer={async create(canvas,world,options){
     return {lift,tiltX,tiltY,angle:l.angle+tiltX*S.leaf.turn,
       y:l.y+(options.motion&&l.altitude===0?l.bob*S.leaf.bob:0)};
   }
-  function drawLeaf(l,shadow){
+  function drawLeaf(l,p,shadow){
     const a=l.altitude,opacity=Math.min(1,Math.max(0,(.65-a)/.24));
-    const contact=a===0,{lift,tiltX,tiltY,angle,y}=pose(l);
+    const contact=a===0,{lift,tiltX,tiltY,angle,y}=p;
     const offsetX=shadow?-LIGHT[0]*(.02+a*.24):0;
     const offsetY=shadow?-LIGHT[1]*(.02+a*.24):0;
     gl.uniform2f(leaf.center,l.x+offsetX,y+offsetY);
@@ -84,8 +84,8 @@ const WaterRenderer={async create(canvas,world,options){
     gl.uniform1f(leaf.opacity,opacity*(shadow?(contact?S.leaf.contactShadow:S.leaf.airShadow):1));
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
-  function drawContact(l){
-    const {tiltX,tiltY,angle,y}=pose(l),size=LEAF_SIZE*l.scale,c=Math.cos(angle),s=Math.sin(angle),extent=size*191/127;
+  function drawContact(l,p){
+    const {tiltX,tiltY,angle,y}=p,size=LEAF_SIZE*l.scale,c=Math.cos(angle),s=Math.sin(angle),extent=size*191/127;
     let i=0;
     for(const [px,py] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
       let qx=(px*c-py*s)*extent,qy=(px*s+py*c)*extent;
@@ -108,7 +108,7 @@ const WaterRenderer={async create(canvas,world,options){
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indices);gl.drawElements(gl.TRIANGLES,count,gl.UNSIGNED_SHORT,0);
     gl.disableVertexAttribArray(water.surface);
   }
-  function drawContacts(){
+  function drawContacts(poses){
     gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     if(options.contact){
       gl.bindTexture(gl.TEXTURE_2D,waterSnapshot);
@@ -118,23 +118,26 @@ const WaterRenderer={async create(canvas,world,options){
       gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,contactField);gl.activeTexture(gl.TEXTURE0);
       gl.uniform2f(contact.pixel,.5/canvas.width,.5/canvas.height);gl.uniform2f(contact.worldSize,world.width,world.height);
       gl.uniform3fv(contact.light,LIGHT);gl.uniform1f(contact.lighting,options.lighting?1:0);
-      for(const l of world.leaves)if(l.altitude===0)drawContact(l);
+      world.leaves.forEach((l,i)=>{if(l.altitude===0)drawContact(l,poses[i]);});
       gl.disableVertexAttribArray(contact.surface);
     }
   }
-  function drawLeaves(){
+  function drawLeaves(poses){
     gl.useProgram(leaf.p);attribute(leaf.position,quad,2);gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(leaf.image,0);
     gl.uniform1i(leaf.canopy,1);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,canopy);gl.activeTexture(gl.TEXTURE0);
     gl.uniform4fv(leaf.crop,crop);gl.uniform1f(leaf.canopyStrength,options.canopy?S.light.canopyStrength:0);
     gl.uniform2f(leaf.worldSize,world.width,world.height);gl.uniform3fv(leaf.light,LIGHT);gl.uniform1f(leaf.lighting,options.lighting?1:0);
     gl.bindTexture(gl.TEXTURE_2D,shadows);
-    for(const l of world.leaves)drawLeaf(l,true);
-    gl.bindTexture(gl.TEXTURE_2D,leaves);for(const l of world.leaves)drawLeaf(l,false);
+    gl.uniform2f(leaf.atlasSize,shadowImage.width,shadowImage.height);
+    world.leaves.forEach((l,i)=>drawLeaf(l,poses[i],true));
+    gl.bindTexture(gl.TEXTURE_2D,leaves);
+    gl.uniform2f(leaf.atlasSize,leafImage.width,leafImage.height);
+    world.leaves.forEach((l,i)=>drawLeaf(l,poses[i],false));
   }
   function draw(){
     drawWater();
-    if(options.leaves){drawContacts();drawLeaves();}
+    if(options.leaves){const poses=world.leaves.map(pose);drawContacts(poses);drawLeaves(poses);}
   }
   return {resize,draw};
 }};

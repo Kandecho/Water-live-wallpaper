@@ -1,0 +1,16 @@
+{
+  "source_sha256": "0189ac16176c8e20b9407d4c33139db57cda05f5c08ec82b0e7fc4dee165501c",
+  "model": "realesrnet-x4plus",
+  "pipeline": "independent RGB sprites: 4x inference then Lanczos /2, twice",
+  "alpha": "original alpha; remove <4/255 and detached <=3px dust; bicubic 4x",
+  "edge_color": "2px interior-color matte cleanup; alpha >=64/255 outward propagation; thin stems retained",
+  "original_cell": 128,
+  "output_cell": 512,
+  "cells": 8,
+  "engine_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": {
+    "realesrnet-x4plus.bin": "26bccfcc82d9e8260c0c6b0dffb34ab297982740882d1f33c6d423f70b562c40",
+    "realesrnet-x4plus.param": "35330ececcea33b6c397a72548e788d5d53becee4734c50b7fada36e89f10a86"
+  },
+  "output_sha256": "f68c6322d722faa67ba4a3e3355c3ff81743b4bc087de082d3eadaa201864ee6"
+}

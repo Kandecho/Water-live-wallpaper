@@ -1,0 +1,36 @@
+HD Preview 1 leaf provenance
+
+Source: reference/original-assets/leaves.png, unchanged AOSP 1024x128 RGBA atlas.
+Output: reference/derived/hd-leaves-4x.png, eight 512x512 cells (4096x512).
+Model: realesrnet-x4plus, the same selected model as the 4K pond.
+Each sprite: 128 -> native 4x / Lanczos 2 -> 256 -> native 4x / Lanczos 2 -> 512.
+Sprites are processed independently with 16px edge-extended padding at each
+stage. Neighboring atlas cells never enter the inference input.
+
+Transparency is not passed through the model. Original alpha is kept, apart
+from values below 4/255 and detached islands of at most three original pixels.
+Bicubic resampling retains the silhouette and thin connected petioles.
+RGB cleanup replaces a two-pixel boundary ring with nearby interior colors;
+thin stems outside that radius keep their own color. Valid edge color extends
+into transparent pixels before inference, avoiding the source's unrelated
+transparent RGB. No shape redraw, diffusion or image-gen was used.
+
+Visual review included all eight leaves on dark/light backgrounds and the
+running wallpaper. Mathematical checks limit silhouette area change to 1.5%
+and retain over 99.5% of substantial source-alpha pixels after downsampling.
+This is a reconstruction, not recovered true leaf detail. Some original fine
+texture is simplified and the original silhouette's resolution remains a limit.
+
+Python + Pillow and the separately installed official NCNN executable/model:
+python scripts/upscale-leaves.py --source reference/original-assets/leaves.png --tool-dir PATH_TO_NCNN --output PATH_TO_RESULTS
+Copy leaves-4x.png to reference/derived/hd-leaves-4x.png and manifest.json to
+reference/derived/leaf-upscale.json, then run python scripts/build-hd-maps.py.
+The runtime never performs these steps. Hashes are in leaf-upscale.json.
+The contact map samples the new alpha at 128px per cell; shadows use 256px.
+Color uses 512px and premultiplied mipmap filtering.
+
+Official projects and download provenance: see background-upscale.txt.
+https://github.com/xinntao/Real-ESRGAN
+https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+No model weights or third-party inference binaries are bundled.
+Original attribution remains in NOTICE.txt and wallpaper-hd/NOTICE.txt.

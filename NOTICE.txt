@@ -15,7 +15,10 @@ Sources used:
   res/drawable-hdpi/leaves.png
   res/drawable-hdpi/water_thumb.jpg
 
-Original image bytes are base64-embedded in assets.js, unchanged.
+The classic wallpaper/ embeds original image bytes in assets.js, unchanged.
+wallpaper-hd/ embeds offline-reconstructed derivatives of the pond and leaves,
+plus derived canopy, contact and shadow maps. See wallpaper-hd/NOTICE.txt and
+docs/background-upscale.txt and docs/leaf-upscale.txt for HD modifications.
 preview.jpg is a screenshot of the desktop adaptation. The original thumbnail is preserved in reference/original-assets/water_thumb.jpg in the source repository.
 No assets or rendering code from Reborn Android Live Wallpapers were copied.
 

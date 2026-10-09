@@ -1,8 +1,8 @@
-Water HD — Floating Leaves Study 04, 2026
+Water (Autumn Leaves) HD — Preview 1, 2026
 
-Original textures and the reference leaf behavior come from AOSP Basic.
+Original textures and reference leaf behavior: AOSP Basic live wallpapers.
 Copyright (C) 2009 The Android Open Source Project.
-Desktop adaptation and HD study maintained by Kandecho.
+Desktop adaptation and HD reconstruction maintained by Kandecho.
 Licensed under Apache License 2.0; see LICENSE.txt.
 
 Pinned upstream commit: 74e84e6cbea39c5946d86d93460f753e03a90607
@@ -10,29 +10,24 @@ https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbe
 Upstream paths: res/drawable-hdpi/pond.jpg, res/drawable-hdpi/leaves.png,
 res/raw/fall.rs, src/com/android/wallpaper/fall/FallRS.java.
 
-Original leaf bytes are unchanged. The pond is an offline-upscaled derivative
-of the original; source files remain preserved in reference/original-assets/.
-preview.jpg is a browser screenshot of this study, not new artwork.
+Original image bytes remain in reference/original-assets/ in the source repo.
+This HD runtime embeds derived pond and leaf artwork, reconstructed offline
+with RealESRNet. Leaf processing cleans tiny detached alpha dust and edge
+colors, separately reconstructs each sprite's RGB, and resamples original
+alpha. preview.jpg is a browser screenshot of the HD runtime.
 
-This study adds a new compact analytic wave profile with exact derivatives,
-shared water/leaf lighting, a precomputed soft contact-shadow atlas,
-premultiplied texture sampling, a gentle analytic flow field, smoothed leaf
-response, drag input, and time-based animation up to 60 FPS.
-Study 02 also derives a padded local height/gradient atlas from the original alpha and
-uses a local meniscus gradient to distort a GPU copy of the rendered water.
-Revision 0.2.1 limits contact to three small, contour-snapped patches per leaf.
-It is not intended as an exact reproduction of the original RenderScript.
-Study 03 adds a soft canopy map extracted offline from the pond reflection and
-procedural main-vein/fold normals for directional leaf lighting. All auxiliary
-maps are baked by scripts/build-hd-maps.py; original artwork is unchanged.
-No new HD leaf artwork, fluid solver or physical soft-body simulation is used.
-The separately maintained classic version remains available in wallpaper/.
+Changes include WebGL 1 rendering, analytic waves with exact derivatives,
+shared directional water/leaf lighting, positional canopy attenuation,
+stable wet/dry floating poses, wave-driven motion, local meniscus refraction,
+offline contact/shadow maps, premultiplied sampling and mipmaps, click/drag
+ripples, desktop engine hooks and time-based motion up to 60 FPS.
+This HD version is not an exact reproduction of the original RenderScript.
+There is no fluid solver, soft-body simulation or runtime image processing.
+The separately maintained classic version remains in wallpaper/.
 
-Independent recreation, not an official Samsung or Google product.
-
-Study 04 uses a 4096x4096 RealESRNet-upscaled pond atlas and regenerated canopy
-selection/projection. Three stable floating poses control local wet/dry contact,
-raised-part shadows and small wave-driven changes in contact loading.
 Upscale project: https://github.com/xinntao/Real-ESRGAN
 Inference: https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
-Third-party model weights and inference binaries are not distributed here.
+Model weights and inference binaries are not distributed with this release.
+Reproduction scripts and asset hashes are included in the source repository.
+
+Independent recreation, not an official Samsung or Google product.

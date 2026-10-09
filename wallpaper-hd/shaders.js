@@ -83,23 +83,28 @@ const WaterShaders=(()=>{
       uv=vec2(position.x*.5+.5,.5-position.y*.5);
     }`,fragment:`
     ${precision}
-    uniform sampler2D image;uniform float sprite;uniform float opacity;
+    uniform sampler2D image;uniform vec2 atlasSize;uniform float sprite;uniform float opacity;
     uniform float shadow;uniform float lighting;uniform mediump vec2 tilt;uniform vec3 light;varying vec2 uv;varying vec2 sceneUV;
     uniform sampler2D canopy;uniform vec4 crop;uniform float canopyStrength;uniform mediump float angle;
     uniform vec2 liftAxis;uniform float restLift;uniform float size;
     uniform vec2 veinOrigin;uniform vec2 veinAxis;
+    // Color and shadow share eight square cells, at independent resolutions.
+    vec2 spriteUV(vec2 local){
+      float cell=atlasSize.x/8.;
+      return (vec2(sprite*cell,0.)+.5+local*(cell-1.))/atlasSize;
+    }
     void main(){
       if(shadow>.5){
         float lifted=smoothstep(.015,.28,dot(uv-veinOrigin,liftAxis))*restLift;
         vec2 offset=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*light.xy*(lifted*.025)/(2.*size);
         vec2 sampleUV=uv+vec2(offset.x,-offset.y);
         if(any(lessThan(sampleUV,vec2(0.)))||any(greaterThan(sampleUV,vec2(1.))))discard;
-        vec2 p=vec2((sprite*128.+.5+sampleUV.x*127.)/1024.,(.5+sampleUV.y*127.)/256.);
+        vec2 p=spriteUV(sampleUV);
         float alpha=mix(texture2D(image,p).a,texture2D(image,p+vec2(0.,.5)).a,lifted);
         alpha*=opacity*(1.-lifted*.4);
         gl_FragColor=vec4(vec3(.035,.065,.085)*alpha,alpha);return;
       }
-      vec2 p=vec2((sprite*128.+.5+uv.x*127.)/1024.,(.5+uv.y*127.)/128.);
+      vec2 p=spriteUV(uv);
       vec4 c=texture2D(image,p);
       vec2 q=uv-veinOrigin,across=vec2(-veinAxis.y,veinAxis.x);
       float side=dot(q,across),along=dot(q,veinAxis);
@@ -115,6 +120,6 @@ const WaterShaders=(()=>{
       vec3 illumination=${v(S.light.ambient)}+${v(S.light.keyColor)}*direct*${f(S.light.keyStrength)};
       vec3 lit=mix(c.rgb,c.rgb*illumination,lighting);
       gl_FragColor=vec4(lit,c.a)*opacity;
-    }`,attributes:['position'],uniforms:['image','canopy','crop','canopyStrength','veinOrigin','veinAxis','liftAxis','restLift','center','worldSize','tilt','angle','size','perspective','sprite','opacity','shadow','lighting','light']}
+    }`,attributes:['position'],uniforms:['image','atlasSize','canopy','crop','canopyStrength','veinOrigin','veinAxis','liftAxis','restLift','center','worldSize','tilt','angle','size','perspective','sprite','opacity','shadow','lighting','light']}
   };
 })();
