@@ -1,101 +1,84 @@
 # Water (Autumn Leaves)
 
-A desktop recreation of the classic Android **Water** live wallpaper from the 2009–2010 era. Autumn leaves drift across a reflective pond, with ripples responding to your touch.
+**English** · [简体中文](README.zh-CN.md)
 
-Built with the original AOSP textures and ripple algorithm, adapted for Windows. The historical AOSP implementation is named `Fall` internally. This project is an independent recreation, not an official Samsung or Google release, and has not been matched frame by frame against a specific Galaxy firmware.
+Bring the classic Android **Water (Autumn Leaves)** live wallpaper from the 2009–2010 era to your Windows desktop. Autumn leaves drift across reflected trees and sky, with gentle ripples on the water.
 
-![Water running in a browser](docs/preview.jpg)
+**[Get the classic on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983)** · **[Download Classic](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/v1.0.1)** · **[Try HD Preview](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/hd-v0.1.0-preview.1)**
 
-## Try it
+![Classic edition: autumn leaves floating across a reflective pond](docs/preview.jpg)
 
-**Wallpaper Engine:** [View on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983).
+## Choose your edition
 
-Now publicly available on Steam Workshop. Subscribe to install it through Wallpaper Engine.
+| Item | Classic | HD Preview |
+| --- | --- | --- |
+| Look | Original artwork and the familiar early Android feel | Higher-resolution artwork with softer lighting and more detailed water contact |
+| Current release | **1.0.1 — stable** | **Preview 1 — experimental** |
+| Best for | Revisiting the original wallpaper | Trying the updated look on a larger display |
+| Steam Workshop | Subscribe and apply | Install manually from the download below |
 
-Download the repository, then open `wallpaper/index.html` in a WebGL-capable browser. No dependencies, build step, server, or network connection are required.
+Both editions run offline after installation and adapt to your screen without stretching the artwork. Click the water to make a ripple, or simply leave it running in the background.
 
-- Click the water to make a ripple.
-- Press **Space** to pause or resume.
+### HD Preview
 
-For desktop use:
+![HD Preview: higher-resolution leaves and pond with positional shade](docs/hd-preview.jpg)
 
-| Engine | Import |
-| --- | --- |
-| Sucrose | Build the Sucrose ZIP, drag it into the library, then choose **Use**. |
-| Lively | Build the Lively ZIP and import it into the library. |
-| Wallpaper Engine | Subscribe via [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983). To use the source locally, create a web wallpaper from `wallpaper/index.html` in the editor. |
+HD retains the original leaf shapes and colors, with a 4K pond background, sharper leaves, subtle floating motion and small ripples around parts of their edges. It is still in development; Classic remains the stable option.
 
-The repository includes metadata for all three engines. Browser rendering, click input, and pause/resume have been checked. The maintainer uses Sucrose and has imported the project into Wallpaper Engine and uploaded it to Steam Workshop. Full compatibility testing across all three engines is still pending. Desktop input forwarding depends on the engine's settings and focus. Rendering is capped at approximately 33 FPS; a lower Wallpaper Engine FPS setting is respected. This setting belongs to each user and is not bundled with the wallpaper.
+## Download and install
 
-Download the **[1.0.1 stable release](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/v1.0.1)** for ready-made Sucrose and Lively import packages. GitHub's automatic source ZIP is the whole repository, not an engine import package.
+You need a wallpaper app to run this on your Windows desktop: [Wallpaper Engine](https://store.steampowered.com/app/431960/Wallpaper_Engine/), [Sucrose](https://github.com/Taiizor/Sucrose), or [Lively Wallpaper](https://github.com/lively-community/lively). No coding or build tools are needed.
 
-## Build import packages
+### Wallpaper Engine
 
-On Windows with PowerShell 7:
+**Classic:** open the [Steam Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3815903983), choose **Subscribe**, then select the wallpaper in Wallpaper Engine.
 
-```powershell
-pwsh -NoProfile -File scripts/package.ps1
-```
+**HD Preview:** download the [HD ZIP](https://github.com/Kandecho/Water-live-wallpaper/releases/download/hd-v0.1.0-preview.1/Water-HD-0.1.0-preview.1.zip) and extract it. In Wallpaper Engine's editor, create a new web wallpaper by selecting the extracted `index.html`. Keep the other extracted files alongside it. Create a separate project so you can keep both editions.
 
-This writes `Water-Original-Sucrose-1.0.1.zip` and `Water-Original-Lively-1.0.1.zip` into `dist/`. Runtime files sit at the ZIP root. Generated packages are excluded from Git; attach them to a Release when ready.
+### Sucrose or Lively
 
-## How it works
+Download the package for your app, then import the ZIP into its wallpaper library and apply it.
 
-The scene uses 14 leaves, an eight-cell texture atlas, and up to ten analytic ripple sources. A sine wave describes each expanding ripple. Local mesh normals offset the pond texture coordinates; the leaves render separately. There is no fluid solver.
+| App | Classic 1.0.1 | HD Preview 1 |
+| --- | --- | --- |
+| Sucrose | [Download ZIP](https://github.com/Kandecho/Water-live-wallpaper/releases/download/v1.0.1/Water-Original-Sucrose-1.0.1.zip) | [Download ZIP](https://github.com/Kandecho/Water-live-wallpaper/releases/download/hd-v0.1.0-preview.1/Water-HD-0.1.0-preview.1.zip) |
+| Lively | [Download ZIP](https://github.com/Kandecho/Water-live-wallpaper/releases/download/v1.0.1/Water-Original-Lively-1.0.1.zip) | [Download ZIP](https://github.com/Kandecho/Water-live-wallpaper/releases/download/hd-v0.1.0-preview.1/Water-HD-0.1.0-preview.1.zip) |
 
-A fixed 30 ms update step preserves the original animation timing on modern monitors. Desktop adaptations include upright, aspect-preserving background cropping and a single viewport instead of Android launcher pages. Original bitmap resolution is retained.
+Use these wallpaper packages rather than GitHub's **Source code (zip)** download. The HD ZIP is shared across all three apps.
 
-## Project layout
+Classic has been used with Sucrose and Wallpaper Engine. Lively installation is not yet verified. HD Preview has passed browser checks; feedback from all three desktop apps is welcome.
 
-```text
-wallpaper/       Standalone runtime and engine metadata
-reference/       Original AOSP images and two source files
-docs/            Preview and archived research notes
-tests/           Simulation checks
-scripts/         Package creation
-dist/            Local ZIP packages (not tracked)
-```
+## Controls
 
-`wallpaper/simulation.js` handles leaf motion and ripples; `wallpaper/renderer.js` handles WebGL and input. `wallpaper/assets.js` embeds the original image bytes as Base64 so the wallpaper also works through `file://`.
+| Action | Classic | HD Preview |
+| --- | --- | --- |
+| Click the water | Make a ripple | Make a ripple |
+| Hold and drag on the water | — | Leave a trail of ripples |
 
-Run the existing checks with Node.js:
+Mouse controls depend on your wallpaper app's input settings and focus. No interaction is needed for the animation to play.
 
-```sh
-node tests/simulation.cjs
-node --check wallpaper/renderer.js
-node --check wallpaper/simulation.js
-```
+## Questions and feedback
 
-The simulation checks compare the analytic wave and triangle normals against independent formulas, exercise landing and drift, run ten simulated minutes, and check portrait through 32:9 grids. They do not replace visual or engine compatibility testing.
+**Can I try it without a wallpaper app?**
 
-For the browser edge regression, serve the repository (for example, `python -m http.server 8000`), then open `http://localhost:8000/tests/edge-render.html`. It checks the rendered pond border at 16:9, portrait, and 32:9 with strong and weak waves. All three cases should report zero white edge pixels.
+Yes. Extract a downloaded wallpaper ZIP and open `index.html` in a modern browser. This opens a browser preview; it does not set your desktop background.
 
-## Water HD — Preview 1
+**Why does clicking do nothing?**
 
-**[Download the HD preview](https://github.com/Kandecho/Water-live-wallpaper/releases/tag/hd-v0.1.0-preview.1)** — a separate pre-release, version `0.1.0-preview.1`.
+Check whether your wallpaper app forwards mouse input to web wallpapers. You can also open `index.html` in a browser to try the controls.
 
-An HD reinterpretation is available in [`wallpaper-hd/`](wallpaper-hd/). It combines the 4K pond with 512px reconstructions of the eight original leaf sprites, positional canopy shade, varied floating poses, wave-linked petiole menisci and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
+**The animation looks slow or uses too much GPU.**
 
-![Water HD Preview 1](docs/hd-preview.jpg)
+Check your wallpaper app's frame-rate and pause settings. Classic is capped at about 33 FPS; HD targets up to 60 FPS. Both respect lower Wallpaper Engine limits. Try a lower frame-rate limit for HD if needed.
 
-Import `Water-HD-0.1.0-preview.1.zip` into Sucrose or Lively. For Wallpaper Engine, extract it and create a **new web wallpaper** from `index.html`. This HD preview has not replaced the classic Steam Workshop item. GitHub's automatic source ZIP is not the import package.
+**Found a problem?**
 
-Open `wallpaper-hd/preview.html` for comparison controls, or `wallpaper-hd/index.html` for a clean wallpaper. **C** toggles lighting, **S** canopy shade, **B** leaf motion, **T** local menisci, **L** leaves, **Space** pause, and **H** the panel. Switches work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
+[Open an issue](https://github.com/Kandecho/Water-live-wallpaper/issues). Include your edition, wallpaper app and version, screen resolution, and a screenshot or short recording if possible.
 
-All artwork and maps are prepared offline and embedded. No server, model, image processing or network is required at startup. Edit `wallpaper-hd/settings.js` to tune the look. See [HD architecture](docs/hd-architecture.md), [background provenance](docs/background-upscale.txt), and [leaf reconstruction](docs/leaf-upscale.txt).
+## Credits and source
 
-```powershell
-pwsh -NoProfile -File scripts/package-hd.ps1
-```
+Based on the Android Open Source Project's [Water / Fall live wallpaper](https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbea39c5946d86d93460f753e03a90607/). HD artwork is reconstructed from those original images. This is an independent desktop recreation, not an official Samsung or Google release.
 
-This writes the HD ZIP and `Water-HD-SHA256SUMS.txt` to `dist/`. Checks cover analytic motion, contact fields, silhouette/petiole preservation, isolated shadows, reproducible maps, positional lighting, lifecycle hooks and 16:9 / portrait / ultrawide / 4K browser rendering. Native engine compatibility and sustained desktop performance still require target-system testing.
+Licensed under [Apache-2.0](LICENSE.txt). See [NOTICE.txt](NOTICE.txt) for attribution.
 
-Next experiments are shared gentle gusts, followed by local leaf bending. Direct leaf-pushing interaction is not planned. The accepted preview stays available as a baseline.
-
-## Sources and license
-
-Based on [AOSP Basic live wallpapers](https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbea39c5946d86d93460f753e03a90607/), pinned to commit `74e84e6cbea39c5946d86d93460f753e03a90607`.
-
-Copyright (C) 2009 The Android Open Source Project. Desktop adaptation maintained by Kandecho. See [LICENSE.txt](LICENSE.txt) and [NOTICE.txt](NOTICE.txt) for attribution and changes.
-
-Historical research pages in `docs/` describe the investigation at the time they were written. This README records the current project state.
+Interested in the code? See the [development notes](docs/development.md) and [HD architecture](docs/hd-architecture.md).
