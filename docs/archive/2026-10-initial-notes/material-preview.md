@@ -7,13 +7,13 @@ template: doc
 先看原始素材，再用现成演示感受整体氛围。最终目标是由 Windows 壁纸引擎运行交互式壁纸。
 
 ## A 原版自带的效果缩略图
-![原版 Water 自带预览图，227×180 像素](../../reference/original-assets/water_thumb.jpg)
+![原版 Water 自带预览图，227×180 像素](../../../reference/original-assets/water_thumb.jpg)
 
 这张小图来自原始资源包，并非新合成的效果图。
 冷蓝色背景、黑色树影和暖色秋叶，是它的主要视觉特征。
 
 ## B 原始背景贴图
-![原始 pond.jpg，1024×1024 像素](../../reference/original-assets/pond.jpg)
+![原始 pond.jpg，1024×1024 像素](../../../reference/original-assets/pond.jpg)
 
 上方和右侧的白色区域属于贴图留白，不是壁纸画面。
 源码通过纹理坐标选择约 960×800 的有效区域。
@@ -23,7 +23,7 @@ template: doc
 这还不是实际桌面运行测试。
 
 ## C 原始叶子图集
-![原始 leaves.png，1024×128 像素，含 8 个叶子单元](../../reference/original-assets/leaves.png)
+![原始 leaves.png，1024×128 像素，含 8 个叶子单元](../../../reference/original-assets/leaves.png)
 
 每个单元约 128×128 像素。最终画面用透明混合绘制单片叶子。
 先按合理尺寸使用这些原图，比直接放大叶子更容易保持原版观感。

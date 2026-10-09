@@ -42,13 +42,13 @@ the leaf's resting wet/dry pose.
 Original AOSP files in `reference/original-assets/` remain unchanged. The approved
 RealESRNet result is `reference/derived/hd-pond-4k.png`, a 4096×4096 atlas with a
 3832×3200 usable region. Unused padding extends edge pixels instead of white.
-See [upscale provenance](background-upscale.txt). The optional
+See [upscale provenance](../../docs/background-upscale.txt). The optional
 `scripts/upscale-background.py` reproduces the two-stage upscale using separately
 downloaded official models. Model binaries are not bundled.
 
 The leaf atlas is `reference/derived/hd-leaves-4x.png` (4096×512). Each 128px
 source cell is reconstructed independently at 256px, then 512px. See
-[leaf provenance](leaf-upscale.txt) and `scripts/upscale-leaves.py`. Alpha
+[leaf provenance](../../docs/leaf-upscale.txt) and `scripts/upscale-leaves.py`. Alpha
 cleanup preserves connected thin petioles. Color and shadow UVs use actual
 texture dimensions instead of assuming the original 128px color cells.
 Contact maps retain their compact 128px design coordinates, sampling the

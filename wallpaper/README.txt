@@ -1,4 +1,5 @@
-Water (Autumn Leaves) 1.0.1 — Classic desktop recreation
+Water (Autumn Leaves) — Classic desktop recreation
+Version: 1.0.1
 
 Open index.html in a WebGL-capable browser. Click for ripples; Space pauses.
 No dependencies, server, or network connection are required.

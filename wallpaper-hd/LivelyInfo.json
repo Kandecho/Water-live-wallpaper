@@ -1,9 +1,9 @@
 {
   "AppVersion": "2.0.0.0",
-  "Title": "Water (Autumn Leaves) HD — Random Wind",
+  "Title": "Water (Autumn Leaves) HD",
   "Thumbnail": "preview.jpg",
   "Preview": null,
-  "Desc": "An HD reinterpretation of the classic Android Water (Autumn Leaves) live wallpaper. A 4K pond and 512px reconstructed original leaves, positional canopy shade, subtle floating poses and local water contact. HD 1.0.0: random gentle and strong gusts sharing one scene; no fluid solver or runtime image processing.",
+  "Desc": "Autumn leaves on a reflective pond, with softer lighting and random gentle and strong gusts. Click or drag the water for ripples.",
   "Author": "Kandecho / AOSP",
   "License": "Apache-2.0",
   "Contact": "https://github.com/Kandecho/Water-live-wallpaper",

@@ -1,11 +1,11 @@
-param([string]$Version='1.0.0')
+param([string]$Version='1.0.1')
 $ErrorActionPreference='Stop'
 if($Version -notmatch '^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$'){throw 'Use a semantic version.'}
 $repo=Split-Path -Parent $PSScriptRoot
 $runtime=Join-Path $repo 'wallpaper-hd'
 $destination=Join-Path $repo 'dist'
 New-Item -ItemType Directory -Path $destination -Force|Out-Null
-$names=@('index.html','preview.html','strong-preview.html','preview-controls.js','preview-controls.css','settings.js','wind.js','world.js','shaders.js','renderer.js','app.js','assets.js','maps.js','preview.jpg','README.txt','LICENSE.txt','NOTICE.txt','SucroseInfo.json','LivelyInfo.json','project.json')
+$names=@('index.html','preview.html','preview-controls.js','preview-controls.css','settings.js','wind.js','world.js','shaders.js','renderer.js','app.js','assets.js','maps.js','preview.jpg','README.txt','LICENSE.txt','NOTICE.txt','SucroseInfo.json','LivelyInfo.json','project.json')
 $stage=[IO.Path]::GetFullPath((Join-Path $destination 'package-hd'))
 $distRoot=[IO.Path]::GetFullPath($destination)+[IO.Path]::DirectorySeparatorChar
 if(-not $stage.StartsWith($distRoot)){throw 'Invalid package staging path'}
@@ -31,5 +31,3 @@ Compress-Archive -LiteralPath $paths -DestinationPath $zipPath -Force
 $zip=[IO.Compression.ZipFile]::OpenRead($zipPath)
 try{foreach($name in $names){if(-not $zip.GetEntry($name)){throw "Missing ZIP root entry: $name"}}}finally{$zip.Dispose()}
 Write-Output "Created $zipPath"
-$digest=(Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-[IO.File]::WriteAllText((Join-Path $destination 'Water-HD-SHA256SUMS.txt'),"$digest  $([IO.Path]::GetFileName($zipPath))`n")

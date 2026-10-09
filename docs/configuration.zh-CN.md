@@ -1,13 +1,13 @@
 # Water HD 参数配置说明
 
-适用于HD 1.0.0 随机风正式版，不适用于经典版 `wallpaper/`。配置入口为源码中的
+适用于 HD 1.x 随机风正式版，不适用于经典版 `wallpaper/`。配置入口为源码中的
 `wallpaper-hd/settings.js`，或解压安装包根目录的 `settings.js`。
 修改后重新加载壁纸生效，没有参数设置窗口，也不自动保存预览时的对照操作。
 局部叶片弯曲已作为废案归档，不属于本配置。
 
 普通 `index.html` 仅保留点击／拖动水面和壁纸引擎控制，不加载对照面板或预览快捷键。
 `preview.html` 保留轻风／强风请求按钮、暂停及效果对照；操作不会写回配置文件。
-`strong-preview.html` 是同一预览页的兼容入口。一个安装包、一套场景，两种风都会自动随机发生。
+一个安装包、一套场景，两种风都会自动随机发生。
 
 ## 修改方法与生效范围
 
@@ -251,5 +251,5 @@ node tests/hd-wind-scheduler.cjs
 pwsh -NoProfile -File scripts/package-hd.ps1
 ```
 
-生成一个 `dist/Water-HD-<版本>.zip`，包含两种随机风，附 `Water-HD-SHA256SUMS.txt`。
+生成一个 `dist/Water-HD-<版本>.zip`，包含两种随机风。Release 只上传壁纸安装 ZIP。
 打包原样保留配置。若修改了接触或离线标定，还应运行开发文档中的相应检查。

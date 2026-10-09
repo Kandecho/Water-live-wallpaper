@@ -3,8 +3,6 @@ HD 1.0.0 是首个 HD 正式版，本次通过 GitHub Release 发布。一个安
 ## 下载
 
 - **`Water-HD-1.0.0.zip`**：壁纸安装包，适用于 Sucrose、Lively 和 Wallpaper Engine 的网页壁纸入口。
-- **`Water-HD-SHA256SUMS.txt`**：安装包和架构图的 SHA-256 校验值。
-- **`Water-HD-Architecture.html`**：中文 HTML 架构图，下载后用浏览器打开。
 
 请下载壁纸 ZIP；GitHub 自动提供的 Source code 压缩包是项目源码，不是导入用的安装包。
 
@@ -44,7 +42,7 @@ The wallpaper includes a reconstructed 4K pond, 512px leaf cells, positional sha
 
 Import the wallpaper ZIP into Sucrose or Lively, or extract it and create a new Wallpaper Engine web wallpaper from `index.html`. Open that file in a browser for a standalone preview. `preview.html` provides comparison controls and manual gust requests using the same queue as automatic wind.
 
-There is no built-in configuration panel. Edit `settings.js` and reload; a Chinese parameter reference is bundled. Installation requires no runtime tools or network connection. The optional HTML architecture diagram is a separate download.
+There is no built-in configuration panel. Edit `settings.js` and reload; a Chinese parameter reference is bundled. Installation requires no runtime tools or network connection.
 
 Simulation, artwork/map consistency and browser checks passed, including 4K, portrait, ultrawide, engine pause and FPS limits. Native HD engine compatibility and sustained 4K performance have not been comprehensively verified; Lively import remains unverified.
 

@@ -57,7 +57,7 @@ User pause is resumed by a request, while engine pause remains respected.
 Local bending remains preserved in
 [the experiment archive](../experiments/rejected-leaf-bending/README.md).
 
-Controls and shortcuts load only with `?preview=1` (used by the preview pages).
+Controls and shortcuts load only with `?preview=1` (used by preview.html).
 Normal `index.html` has no panel or preview shortcuts; H cannot reveal one.
 Edit `settings.js` and reload for lasting changes. The wallpaper engine's
 pause/resume and FPS integration remain available in both modes.
@@ -73,10 +73,13 @@ pwsh -NoProfile -File scripts/package-hd.ps1
 
 The Classic script creates separate Sucrose and Lively ZIPs. The HD script
 creates one ZIP containing both random gust types, metadata for all three apps,
-and `CONFIGURATION.zh-CN.md`, plus a checksum file. Settings are copied unchanged.
-Runtime files sit at the archive root. HD 1.0.0 ships this random-wind behavior
-as one package on GitHub Releases under `hd-v1.0.0`. Use the independent
+and `CONFIGURATION.zh-CN.md`. Settings are copied unchanged.
+Runtime files sit at the archive root. HD ships the random-wind behavior
+as one package on GitHub Releases. Use the independent
 `hd-v<version>` tag series for HD; Classic and its Workshop project are separate.
+
+Release steps and the allowed download attachments are in [publishing](publishing.md).
+Early investigation notes are in [the dated archive](archive/2026-10-initial-notes/README.md); they do not describe the current release.
 
 ## Checks
 

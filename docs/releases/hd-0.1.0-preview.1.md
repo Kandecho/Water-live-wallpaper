@@ -27,7 +27,7 @@ and metadata for all three engines; GitHub's source ZIP is not an import ZIP.
 
 Click/drag on water creates ripples. Space pauses; H shows controls. There is
 no direct leaf-dragging interaction. Rendering is capped at 60 FPS and respects
-lower Wallpaper Engine settings. Verify downloads with Water-HD-SHA256SUMS.txt.
+lower Wallpaper Engine settings.
 
 ## Validation and limits
 
