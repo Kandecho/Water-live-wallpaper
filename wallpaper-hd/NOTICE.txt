@@ -1,4 +1,4 @@
-Water HD — Light & Canopy Study 03, 2026
+Water HD — Floating Leaves Study 04, 2026
 
 Original textures and the reference leaf behavior come from AOSP Basic.
 Copyright (C) 2009 The Android Open Source Project.
@@ -10,7 +10,8 @@ https://android.googlesource.com/platform/packages/wallpapers/Basic/+/74e84e6cbe
 Upstream paths: res/drawable-hdpi/pond.jpg, res/drawable-hdpi/leaves.png,
 res/raw/fall.rs, src/com/android/wallpaper/fall/FallRS.java.
 
-The original image bytes are unchanged and embedded in assets.js.
+Original leaf bytes are unchanged. The pond is an offline-upscaled derivative
+of the original; source files remain preserved in reference/original-assets/.
 preview.jpg is a browser screenshot of this study, not new artwork.
 
 This study adds a new compact analytic wave profile with exact derivatives,
@@ -28,3 +29,10 @@ No new HD leaf artwork, fluid solver or physical soft-body simulation is used.
 The separately maintained classic version remains available in wallpaper/.
 
 Independent recreation, not an official Samsung or Google product.
+
+Study 04 uses a 4096x4096 RealESRNet-upscaled pond atlas and regenerated canopy
+selection/projection. Three stable floating poses control local wet/dry contact,
+raised-part shadows and small wave-driven changes in contact loading.
+Upscale project: https://github.com/xinntao/Real-ESRGAN
+Inference: https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+Third-party model weights and inference binaries are not distributed here.

@@ -3,7 +3,7 @@
 <style>html,body{margin:0;height:100%;overflow:hidden;background:#203c58;font:13px system-ui}canvas{width:100%;height:100%;display:block}#controls{display:none}#sequence{position:fixed;bottom:12px;left:12px;padding:10px 14px;background:#10252af0;color:#eef2e4;border-radius:6px}button{font:inherit;padding:6px 10px;margin-left:8px}#error{position:fixed;top:0;background:#900;color:white}</style>
 <canvas id="water"></canvas><p id="error" hidden></p>
 <aside id="controls"><div id="feature-controls"></div><span id="fps"></span></aside>
-<aside id="sequence">8 original sprites · 1.67× normal leaf size · <output id="time">0.00 s</output><button id="advance">Advance 0.25 s</button><button id="contactToggle">Toggle contact</button><button id="reset">Reset</button></aside>
+<aside id="sequence">8 original sprites · 1.67× normal leaf size · <output id="time">0.00 s</output><button id="advance">Advance 0.25 s</button><button id="contactToggle">Toggle contact</button><button id="pose">Pose: varied</button><button id="reset">Reset</button></aside>
 <script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script>
 <script>
 // Visual QA only. Production renderer; fixed seed, controlled physical time.
@@ -11,10 +11,10 @@ const OriginalWorld=WaterHD.World;let current;
 WaterHD.World=class extends OriginalWorld{
   constructor(aspect){super(aspect,()=>.42);current=this;this.setup();}
   setup(){
-    this.time=0;this.waves=[];this.nextAmbient=100;
+    this.time=0;this.waves=[];this.nextAmbient=100;pose=-1;document.getElementById('pose').textContent='Pose: varied';
     this.leaves=Array.from({length:8},(_,i)=>Object.assign(this.newLeaf(false),{
       x:((i%4+.5)/4-.5)*this.width,y:(i<4?.65:-.65),sprite:i,scale:.75,
-      angle:[.1,-.2,.35,-.1,.2,.3,-.3,.15][i],spin:i%2?.085:-.07,phase:i*.7
+      angle:[.1,-.2,.35,-.1,.2,.3,-.3,.15][i],spin:i%2?.085:-.07,phase:i*.7,contactState:i%3
     }));
     this.drop(.30,.34,1);document.getElementById('time').textContent='0.00 s';
   }
@@ -24,4 +24,5 @@ WaterHD.World=class extends OriginalWorld{
 document.getElementById('advance').onclick=()=>current.advance();
 document.getElementById('reset').onclick=()=>current.setup();
 document.getElementById('contactToggle').onclick=()=>document.getElementById('contact').click();
+let pose=-1;document.getElementById('pose').onclick=()=>{pose=(pose+1)%3;current.leaves.forEach(l=>l.contactState=pose);document.getElementById('pose').textContent=['Wet petioles','Raised petioles','Side lifted'][pose];};
 </script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script><script src="../wallpaper-hd/app.js"></script></html>

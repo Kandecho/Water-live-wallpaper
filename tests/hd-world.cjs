@@ -2,6 +2,20 @@ const assert=require('node:assert/strict');
 const {World,MAX_WAVES}=require('../wallpaper-hd/world.js');
 function seeded(){let n=420;return ()=>((n=(Math.imul(n,1664525)+1013904223)>>>0)/4294967296);}
 const world=new World(16/9,seeded());
+const contactStates=world.leaves.map(l=>l.contactState);
+assert.equal(new Set(contactStates).size,3,'seeded leaves should include wet petioles and raised petioles');
+const resting=world.leaves.map(l=>[l.contactState,l.restLift]);
+for(let i=0;i<120;i++)world.update(1/60);
+assert.deepEqual(world.leaves.map(l=>[l.contactState,l.restLift]),resting,'wet/dry poses must not flicker or reroll each frame');
+const crest=new World(16/9,seeded());crest.nextAmbient=Infinity;
+crest.leaves=crest.leaves.slice(0,1);Object.assign(crest.leaves[0],{x:0,y:0});crest.waves=[];crest.drop(.48,.5,1);
+let response=0;
+for(let i=0;i<180;i++){
+  crest.update(1/60);const wet=crest.leaves[0].wetness;
+  assert.ok(wet>=.84&&wet<=1.16,'wave modulation stays within a restrained range');
+  response=Math.max(response,Math.abs(wet-1));
+}
+assert.ok(response>.005,'a passing wave must change contact loading');
 world.waves=[];world.drop(.5,.5);world.time=.8;
 const p=[.5,.12],s=world.sample(...p,new Float64Array(3)),eps=1e-5;
 for(let axis=0;axis<2;axis++){

@@ -27,7 +27,8 @@
         scale:this.range(...S.scene.leafScale),angle:this.range(0,Math.PI*2),sprite:Math.floor(this.range(0,8)),
         spin:this.range(...S.drift.spin)*(falling?2:1),altitude:falling?.65:0,
         vx:this.range(...S.drift.velocityX),vy:this.range(...S.drift.velocityY),phase:this.range(0,Math.PI*2),
-        slopeX:0,slopeY:0,bob:0};
+        contactState:Math.floor(this.range(0,S.contact.poses.length)),restLift:this.range(...S.contact.liftRange),
+        slopeX:0,slopeY:0,bob:0,wetness:1};
     }
     drop(u,v,strength=1){
       if(this.waves.length===MAX_WAVES)this.waves.shift();
@@ -83,6 +84,9 @@
         l.slopeX+=(clamp((a[0]+b[0])*.5,-.3,.3)-l.slopeX)*ease;
         l.slopeY+=(clamp((a[1]+b[1])*.5,-.3,.3)-l.slopeY)*ease;
         l.bob+=((a[2]+b[2])*.5-l.bob)*ease;
+        // A delayed floater meets a passing crest more firmly; no independent oscillator.
+        const wet=1+clamp(((a[2]+b[2])*.5-l.bob)*S.contact.waveGain,-S.contact.waveLimit,S.contact.waveLimit);
+        l.wetness+=(wet-l.wetness)*ease;
         const edge=LEAF_SIZE*l.scale;
         if(l.y+edge < -this.height/2 || Math.abs(l.x)-edge>this.width/2){
           Object.assign(l,this.newLeaf(true));recycled.push(l);

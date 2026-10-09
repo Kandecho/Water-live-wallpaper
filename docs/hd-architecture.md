@@ -1,86 +1,93 @@
 # Water HD architecture
 
-The HD study keeps the original's useful idea: a small scene state, analytic
-motion, prepared images, and a direct rendering order. It uses plain JavaScript
-and WebGL 1, without a build tool, framework, physics engine, or runtime baking.
-The classic `wallpaper/` release is independent.
+Study 04 keeps prepared images, compact state and analytic motion, rendered
+with plain JavaScript and WebGL 1. There is no fluid solver or runtime image
+extraction. The classic `wallpaper/` release remains independent.
 
-## Runtime responsibilities
+## Responsibilities
 
 | File | Responsibility |
 | --- | --- |
-| `wallpaper-hd/settings.js` | Artistic parameters and feature definitions: defaults, groups, keyboard shortcuts. |
-| `wallpaper-hd/world.js` | Leaf state, drift, falling and analytic wave height/derivatives. No DOM or WebGL. |
-| `wallpaper-hd/shaders.js` | Three shader programs. Shared leaf/contact pose, with constants from settings. |
-| `wallpaper-hd/renderer.js` | Load textures, create GPU resources, resize meshes, and draw the scene. No input or animation timer. |
-| `wallpaper-hd/app.js` | Frame pacing, engine pause/FPS hooks, pointer input and the optional comparison panel. |
-| `wallpaper-hd/assets.js` | Unchanged embedded AOSP background and leaf artwork. |
-| `wallpaper-hd/maps.js` | Generated embedded canopy, local contact and soft shadow textures. |
+| `settings.js` | Artistic controls, offline canopy calibration, pose definitions and feature switches. |
+| `world.js` | Leaf lifetime/drift, stable wet/dry pose, analytic waves and delayed response. |
+| `shaders.js` | Water, contact and leaf/shadow programs, with a shared leaf transform. |
+| `renderer.js` | Textures, mesh, resize and ordered passes. One resting/wave pose is reused across leaves, shadows and contacts. |
+| `app.js` | Input, preview controls, timer and engine pause/FPS hooks. |
+| `assets.js` | Generated embedded 4K pond and unchanged AOSP leaf artwork. |
+| `maps.js` | Generated embedded canopy, wet/dry contact variants and shadow textures. |
 
-Per frame: `app` advances `world`, then asks `renderer` to draw water → local
-menisci → soft leaf shadows → leaves. A single GPU copy of the water is used
-only when visible leaves and menisci are enabled. There is no CPU readback in
-the wallpaper. PNG data is embedded so image loading also works offline without
-fetching sibling files or requiring a local server.
+Each frame advances the world, then draws water → menisci → shadows → leaves.
+Menisci require one GPU copy of the rendered water. There is no CPU readback
+in the wallpaper. The 4K background uses mipmaps to reduce minification shimmer
+and high-precision texture coordinates where supported. Images remain embedded
+for offline use, including direct local-file loading.
 
-## Editing the look
+## Settings and interaction
 
-Edit `settings.js` and reload the wallpaper. `light` contains the direction,
-ambient color, key-light color/strength, and canopy attenuation. `leaf` contains
-the main-vein fold/curl and per-sprite vein axes. `contact` controls the depth
-and extra directional lighting of the already narrow contact patches.
-`water`, `waves`, `drift`, and `input` hold the other visual/motion controls.
+`light.direction` supplies water/leaf lighting, shadow direction and the offline
+canopy shift. `light.canopy` groups extraction thresholds, blur, levels, projection
+height and scale. Projection height is an artistic UV calibration, not recovered
+physical tree height. `contact` contains depth, reflection cue, resting tilt,
+three poses and bounded wave response. `leaf` holds sprite roots and vein axes.
 
-Feature definitions also build the preview panel, so labels, defaults and keys
-are not duplicated in HTML and event handlers:
+The feature list generates defaults, panel groups and keys: C lighting, S canopy,
+B wave-driven motion, T menisci, L leaves. Space pauses; H shows/hides the panel.
+Switches redraw while paused without advancing time. Disabling motion retains
+the leaf's resting wet/dry pose.
 
-| Group | Features | Keys |
-| --- | --- | --- |
-| Light | Lighting, canopy | C, S |
-| Water | Leaf motion, local menisci | B, T |
-| View | Leaves, pause | L, Space |
+## Offline workflow
 
-H toggles the panel. All comparison switches work while paused. Lighting can
-be disabled without disabling motion; canopy only attenuates the direct-light
-term. The soft contact shadow does not change when toggling menisci.
+Original AOSP files in `reference/original-assets/` remain unchanged. The approved
+RealESRNet result is `reference/derived/hd-pond-4k.png`, a 4096×4096 atlas with a
+3832×3200 usable region. Unused padding extends edge pixels instead of white.
+See [upscale provenance](background-upscale.txt). The optional
+`scripts/upscale-background.py` reproduces the two-stage upscale using separately
+downloaded official models. Model binaries are not bundled.
 
-## Offline map extraction
-
-Run from the repository root with Python + Pillow and Node.js installed:
+With Python + Pillow and Node.js, run from the repository root:
 
 ```sh
 python scripts/build-hd-maps.py
 python scripts/build-hd-maps.py --check
 ```
 
-Normal wallpaper users need none of these tools. Generated outputs are committed.
-The `--check` mode regenerates in memory and verifies the committed outputs
-without writing files.
+This derives maps from the 4K pond and original leaf alpha, then embeds PNGs and
+artwork. `--check` regenerates in memory and compares saved bytes. Normal users
+need none of these tools; neither extraction nor upscaling runs on startup.
 
-The source images in `reference/original-assets/` are never modified. The script
-creates inspectable PNGs under `reference/derived/` and embeds the same bytes in
-`wallpaper-hd/maps.js`:
+- **Canopy, 512×512:** select dark near-neutral silhouettes by brightness and
+  channel spread, rejecting dark blue sky. Shift opposite the shared light,
+  blur, then remap levels to remove the gray floor. Black = open sky; white =
+  key-light occlusion. Sampling uses world position and the background crop,
+  without ripple displacement. It never darkens the reflected background again.
+- **Contact, 1536×576:** eight sprites across, three poses down. The alpha-distance
+  method in `scripts/lib/meniscus.cjs` includes semi-transparent thin petioles.
+  Short contour patches and petiole segments taper within eight original pixels.
+  Raised areas are suppressed using the same local pose axes as the renderer.
+  R stores depression weight; GB stores its derivatives.
+- **Shadow, 1024×256:** each leaf alpha is blurred independently at two radii.
+  Raised parts blend toward a softer, fainter shadow and shift away from the key;
+  wet areas retain the tighter shadow.
 
-- **Canopy, 256×256:** select dark areas from the usable pond region, downsample,
-  and blur. Black = open sky, white = stronger canopy occlusion. This is art
-  direction based on reflections, not a recovered map of physical tree shadows.
-- **Contact, 1536×192:** `scripts/lib/meniscus.cjs` retains the tested distance and
-  pinned-contact algorithm. R stores local depression weight; GB store its
-  derivatives. Three short contact patches per leaf fade within 8 source pixels.
-- **Shadow, 1024×128:** blur each original alpha cell separately, preventing
-  neighbouring sprites from bleeding into one another.
+Edit petiole segments and contour anchors in `scripts/lib/meniscus.cjs`.
+Regenerate maps after changing source images, `light.direction`, `light.canopy`,
+`contact.poses` or sprite roots/axes. Ordinary strengths and wave settings only
+require reload. The scene deliberately uses a fixed light direction.
 
-Edit canopy thresholds/blur in `build-hd-maps.py`; edit contact anchors in
-`scripts/lib/meniscus.cjs`, then rerun the extraction. Changing ordinary light
-strengths or motion settings does not require regeneration.
+## Coherent floating poses
 
-Canopy sampling uses world position and the same background crop, but excludes
-ripple displacement. Leaf normals come from a rounded main vein and shallow
-fold/curl, rotated with each leaf. Ambient fill remains present under the canopy;
-only the key light is attenuated. The current original artwork still limits
-detail, and no true leaf deformation or wetting solver is used.
+A leaf chooses a pose and small lift variation once at birth. Randomness never
+rerolls per frame. The pose selects both a contact-map row and the raised-part
+direction used for normals and shadows: wet petiole / raised tip, raised
+petiole, or raised side.
 
-## Relevant checks
+Two wave samples drive delayed slope and bobbing. Their height relative to the
+delayed leaf height also modulates meniscus depth, bounded to ±16% and smoothed
+with the same response time. The renderer combines resting tilt and wave tilt
+for all leaf passes. Water and meniscus gradients combine for reflection and
+lighting. There is no independent leaf oscillator, diffraction or wetting solver.
+
+## Verification
 
 ```sh
 node tests/hd-world.cjs
@@ -88,13 +95,20 @@ node tests/hd-contact.cjs
 python scripts/build-hd-maps.py --check
 ```
 
-Serve the repository and open `tests/hd-render.html` for complete-frame border
-and WebGL checks, and `tests/hd-lighting.html` for canopy placement, independent
-switches and the absence of runtime image generation. `tests/hd-lifecycle.html`
-checks engine pause/resume, the FPS cap and comparison redraws while paused.
-`tests/hd-contact-sequence.html`
-provides all eight original sprites and 0.25-second simulation steps for visual
-inspection of drift, rotation and passing waves.
+Checks cover exact wave derivatives, frame-rate independence, landing, long-run
+state, stable varied poses, bounded wave loading, atlas isolation and depression
+derivatives for all pose rows. Browser pages served from the repository:
 
-Browser checks do not establish native engine compatibility or 4K desktop
-performance. Wallpaper Engine's own FPS limit is respected.
+- `tests/hd-render.html`: complete frames, borders and GL errors at 1280×720,
+  480×800, 2560×720 and 3840×2160.
+- `tests/hd-lighting.html`: position sampling, independent switches, and no
+  Canvas2D contexts during runtime initialization.
+- `tests/hd-lifecycle.html`: engine pause/resume, FPS cap and paused redraws.
+- `tests/hd-contact-sequence.html`: all eight sprites at 1.67× normal size,
+  quarter-second steps and wet/raised-petiole comparisons.
+- `tests/hd-shade-sequence.html`: one fixed-angle leaf on a 24-second path at
+  normal drift speed. Enlarged on/off views isolate positional lighting; center
+  attenuation spans about 0–20% on this path.
+
+Browser checks do not establish native-engine compatibility or sustained 4K
+performance. Leaves remain the original low-resolution placeholder artwork.

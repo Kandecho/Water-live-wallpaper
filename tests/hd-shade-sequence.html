@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Water HD positional shade sequence</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#203c58;color:#ecf1e4;font:13px system-ui}#water{width:100%;height:100%;display:block}aside{position:fixed;bottom:12px;left:12px;background:#10252af2;padding:12px;border-radius:6px}button{font:inherit;padding:8px;margin:5px}figure{display:inline-block;margin:8px}figure canvas{width:180px;height:180px}figcaption{padding:4px}#results{white-space:pre-wrap;margin:4px}</style>
+<canvas id="water"></canvas><aside><div>Same leaf · fixed angle · normal drift speed · <output id="time">0 s</output></div>
+<button id="advance">Advance 4 s</button><button id="reset">Reset</button><button id="toggle">Canopy: on</button>
+<div><figure><canvas id="open" width="140" height="140"></canvas><figcaption>Without canopy · enlarged</figcaption></figure><figure><canvas id="shade" width="140" height="140"></canvas><figcaption>With canopy · enlarged</figcaption></figure></div><pre id="results">Loading…</pre></aside>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script>
+(async()=>{
+  const canvas=document.getElementById('water'),world=new WaterHD.World(16/9,()=>.42);
+  const options={lighting:true,canopy:true,motion:false,contact:false,leaves:true};
+  const renderer=await WaterRenderer.create(canvas,world,options);renderer.resize(innerWidth,innerHeight,1);
+  world.waves=[];world.leaves=world.leaves.slice(0,1);
+  Object.assign(world.leaves[0],{sprite:3,scale:.45,angle:0,contactState:0,restLift:.8});
+  const gl=canvas.getContext('webgl');let time=0,enabled=true,values=[];
+  function draw(t){
+    world.time=t;world.leaves[0].x=0;const v=.23+t*.012;world.leaves[0].y=(.5-v)*world.height;
+    const cx=canvas.width/2,cy=canvas.height*v;
+    const samples=[];
+    for(const [id,on]of[['open',false],['shade',true]]){
+      options.canopy=on;renderer.draw();
+      // Inspection lens only, never part of the wallpaper runtime.
+      const context=document.getElementById(id).getContext('2d');context.clearRect(0,0,140,140);
+      context.drawImage(canvas,cx-70,cy-70,140,140,0,0,140,140);
+      const p=new Uint8Array(5*5*4);gl.readPixels(Math.round(cx)-2,Math.round(canvas.height-cy)-2,5,5,gl.RGBA,gl.UNSIGNED_BYTE,p);
+      let sum=0;for(let i=0;i<p.length;i+=4)sum+=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];samples.push(sum/25);
+    }
+    options.canopy=enabled;renderer.draw();return 1-samples[1]/samples[0];
+  }
+  // Quantify one continuous trajectory with the orientation/wave-lighting held fixed.
+  for(let t=0;t<=24;t++)values.push(draw(t));
+  const span=Math.max(...values)-Math.min(...values);
+  if(span<.08)throw Error('Position-dependent brightness variation below 8 percentage points');
+  if(gl.getError())throw Error('WebGL error');
+  function refresh(){const shade=draw(time);document.getElementById('time').textContent=time+' s';document.getElementById('toggle').textContent='Canopy: '+(enabled?'on':'off');
+    document.getElementById('results').textContent=`PASS same-leaf path variation: ${(span*100).toFixed(1)} percentage points\nCurrent center attenuation: ${(shade*100).toFixed(1)}% · GL 0`;}
+  document.getElementById('advance').onclick=()=>{time=(time+4)%28;refresh();};
+  document.getElementById('reset').onclick=()=>{time=0;refresh();};
+  document.getElementById('toggle').onclick=()=>{enabled=!enabled;refresh();};refresh();
+})().catch(e=>{document.getElementById('results').textContent='FAIL '+e.message;console.error(e);});
+</script></html>

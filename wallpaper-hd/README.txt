@@ -1,37 +1,43 @@
-Water HD — Light & Canopy Study 03 (prototype 0.3.0)
+Water HD — Floating Leaves Study 04 (prototype 0.4.0)
 
-Original AOSP leaf and pond artwork with restrained directional lighting,
-soft canopy shade, narrow leaf-edge menisci and interactive ripples.
-No new HD leaf artwork. Separate from the classic 1.0.1 release.
+4K pond reflection, positional canopy shade, varied wet/dry leaf poses,
+narrow petiole/edge menisci and interactive ripples. Original leaf artwork
+remains a placeholder. Separate from the classic 1.0.1 release.
 
 PREVIEW: open preview.html for the comparison panel.
 WALLPAPER: use index.html for a clean screen.
 Click / drag: ripples. Space: pause. H: panel. All switches work while paused.
-C: lighting. S: canopy. B: leaf motion. T: local menisci. L: leaves.
+C: lighting. S: canopy. B: wave-driven motion. T: menisci. L: leaves.
 
-Light: cool ambient fill plus a gentle warm key light. Leaf normals describe a
-rounded main vein and shallow folds. A fixed, soft canopy map attenuates only
-the key light; it follows scene position, not leaf UVs or wave displacement.
-The canopy is an artistic approximation extracted from the reflected trees,
-not a geometrically recovered shadow projection.
+BACKGROUND: original AOSP pond, processed offline with RealESRNet at 2x then
+4x. The 4096x4096 atlas contains a 3832x3200 usable image with edge-extended
+padding. Composition and colors are retained; tiny silhouettes are simplified.
+No diffusion/image-gen. Mipmaps reduce shimmer at smaller display sizes.
 
-Contact: three small, contour-snapped patches per original leaf. Their local
-height gradient distorts the pond reflection within 8 source pixels of the
-edge. No capillary attraction, true deformation or wetting simulation.
+LIGHT: one direction controls water, leaf normals, raised-part shadows and
+offline canopy projection. The canopy is selected by color and brightness,
+shifted away from the light, softened and remapped to keep open areas bright.
+It is art direction from reflections, not recovered 3D tree geometry.
+Only direct leaf light is attenuated; the background is not darkened twice.
 
-All auxiliary maps are PRECOMPUTED and included. The wallpaper loads textures
-only; no image extraction or blur runs at startup. Rebuild scripts are retained
-in the source repository. Original bitmap bytes remain unchanged.
+CONTACT: a leaf receives one of three poses at birth: wet petiole / raised tip,
+raised petiole, or raised side. Its pose stays stable until it leaves the scene.
+Raised regions have no meniscus and a softer, fainter shadow. Short wet petiole
+segments and a few edge patches disturb the water. The same wave height that
+drives bobbing slightly modulates contact loading, without an independent
+oscillator or per-frame random wetting. No fluid or physical wetting solver.
 
-TUNING: settings.js groups light, water, leaf, contact, drift and input controls.
-Rendering order: water -> menisci -> soft shadows -> leaves.
-Simulation, shaders, rendering and engine/input handling are separate modules.
-Architecture and extraction: docs/hd-architecture.md in the source repository.
+Maps and image bytes are PRECOMPUTED and embedded. No extraction, blur,
+model download, Python, Node, server or network is required at startup.
+TUNING: settings.js groups light, canopy extraction, leaf/contact poses,
+waves, drift and input. Extraction changes require rebuilding offline maps
+with the repository script; ordinary strength changes only require reload.
+Architecture: docs/hd-architecture.md in the source repository.
 
 Timing is independent of rendering FPS, up to 60 FPS. Wallpaper Engine respects
-your global FPS setting. The preview FPS meter counts render calls, not GPU time.
-Browser checks passed; native engine compatibility and 4K performance still
-need testing on the target desktop. No runtime dependencies or internet access.
+your global limit. The meter counts render calls, not GPU completion.
+Browser checks include 3840x2160 rendering; native engine compatibility and
+sustained 4K desktop performance still require testing on the target desktop.
 
 Sucrose: drag this ZIP into the library.
 Lively: import the ZIP (not yet tested in Lively).

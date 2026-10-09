@@ -70,17 +70,17 @@ The simulation checks compare the analytic wave and triangle normals against ind
 
 For the browser edge regression, serve the repository (for example, `python -m http.server 8000`), then open `http://localhost:8000/tests/edge-render.html`. It checks the rendered pond border at 16:9, portrait, and 32:9 with strong and weak waves. All three cases should report zero white edge pixels.
 
-## Water HD — Study 03
+## Water HD — Study 04
 
-An independent visual prototype is available in [`wallpaper-hd/`](wallpaper-hd/). It retains the original artwork while adding directional leaf lighting, soft canopy shade, narrow local menisci, and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
+An independent visual prototype is available in [`wallpaper-hd/`](wallpaper-hd/). It combines an approved 4K upscale of the original pond with unchanged placeholder leaf artwork, calibrated positional canopy shade, stable wet/dry leaf poses, wave-linked petiole menisci, and click/drag ripples. The classic 1.0.1 release and Workshop project are unchanged.
 
 Open `wallpaper-hd/preview.html` for the grouped comparison panel, or `wallpaper-hd/index.html` for a clean wallpaper. **C** toggles lighting, **S** canopy shade, **B** leaf motion, **T** local menisci, **L** leaves, **Space** pause, and **H** the panel. Switches work while paused. Rendering targets up to 60 FPS and respects lower Wallpaper Engine limits.
 
 All auxiliary maps are generated offline and committed. There is no image processing at startup. Edit `wallpaper-hd/settings.js` to tune the look; only changes to extracted maps require `python scripts/build-hd-maps.py` (Python + Pillow and Node.js). See [HD architecture and extraction](docs/hd-architecture.md) for responsibilities, parameters and checks.
 
-Build its separate package with `pwsh -NoProfile -File scripts/package-hd.ps1`, producing `dist/Water-HD-Study-03.zip`. Create a **new** Wallpaper Engine project instead of overwriting the published classic item.
+Build its separate package with `pwsh -NoProfile -File scripts/package-hd.ps1`, producing `dist/Water-HD-Study-04.zip`. Create a **new** Wallpaper Engine project instead of overwriting the published classic item.
 
-Checks cover analytic motion, local contact fields, reproducible offline maps, world-position canopy sampling, independent switches, zero runtime image baking, and 16:9 / portrait / 32:9 border rendering. Native engine compatibility and 4K performance still require target-system testing.
+Checks cover analytic motion, local contact fields, reproducible offline maps, world-position canopy sampling, independent switches, zero runtime image baking, a fixed-angle leaf crossing light and shade, and 16:9 / portrait / 32:9 / 3840×2160 border rendering. Native engine compatibility and 4K performance still require target-system testing.
 
 ## Sources and license
 

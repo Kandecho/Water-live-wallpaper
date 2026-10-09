@@ -1,0 +1,62 @@
+{
+  "source": "D:\\PROJECTS\\Water-live-wallpaper\\reference\\original-assets\\pond.jpg",
+  "source_sha256": "10493e649e132941de129515e9ccfa21f20bec9473b79c16c28e9db330a193e5",
+  "crop": [
+    0,
+    224,
+    958,
+    1024
+  ],
+  "source_canvas": [
+    1024,
+    1024
+  ],
+  "effective_2k": [
+    1916,
+    1600
+  ],
+  "release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "candidates": [
+    {
+      "name": "anime-video",
+      "model": "realesr-animevideov3",
+      "native_scale": 2,
+      "output_scale": 2
+    },
+    {
+      "name": "general",
+      "model": "realesrgan-x4plus",
+      "native_scale": 4,
+      "output_scale": 2
+    },
+    {
+      "name": "smooth",
+      "model": "realesrnet-x4plus",
+      "native_scale": 4,
+      "output_scale": 2
+    },
+    {
+      "name": "illustration",
+      "model": "realesrgan-x4plus-anime",
+      "native_scale": 4,
+      "output_scale": 2
+    }
+  ],
+  "selected": "smooth",
+  "second_stage": {
+    "model": "realesrnet-x4plus",
+    "native_scale": 4,
+    "resize_to": [
+      3832,
+      3200
+    ],
+    "input": "2k-smooth.png",
+    "output": "pond-4k.png"
+  },
+  "smooth_model_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.2.4",
+  "model_sha256": {
+    "realesrnet-x4plus.bin": "26bccfcc82d9e8260c0c6b0dffb34ab297982740882d1f33c6d423f70b562c40",
+    "realesrnet-x4plus.param": "35330ececcea33b6c397a72548e788d5d53becee4734c50b7fada36e89f10a86"
+  },
+  "engine_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c"
+}

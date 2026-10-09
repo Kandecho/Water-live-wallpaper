@@ -1,10 +1,10 @@
 {
   "AppVersion": "26.10.05.0",
-  "Version": "0.3.0.0",
-  "Title": "Water HD — Study 03",
+  "Version": "0.4.0.0",
+  "Title": "Water HD — Study 04",
   "Thumbnail": "preview.jpg",
   "Preview": "preview.jpg",
-  "Description": "Water HD Study 03: soft canopy shade, directional leaf lighting, local menisci and interactive ripples. Original AOSP artwork. Offline-generated maps, compact analytic motion and WebGL rendering.",
+  "Description": "Water HD Study 04: a 4K pond reflection, calibrated positional canopy shade, varied wet/dry leaf poses and wave-linked petiole menisci. Original AOSP leaf artwork; offline maps and compact analytic motion.",
   "Author": "Kandecho / AOSP",
   "License": "LICENSE.txt",
   "Contact": "https://github.com/Kandecho/Water-live-wallpaper",

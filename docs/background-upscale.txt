@@ -1,0 +1,32 @@
+Study 04 background provenance
+
+Original: reference/original-assets/pond.jpg (unchanged AOSP texture).
+Approved result: reference/derived/hd-pond-4k.png.
+It retains the original 1024x1024 atlas layout at 4x resolution; effective
+crop (0,224,958,1024) becomes (0,896,3832,4096). Padding repeats edge pixels.
+
+Compared: Lanczos, realesr-animevideov3 native 2x, realesrgan-x4plus,
+realesrnet-x4plus, realesrgan-x4plus-anime.
+Selected: RealESRNet for restrained edges and smooth blue/purple gradients.
+The user approved this 4K result before its integration into Study 04.
+
+Pipeline: original crop -> RealESRNet 4x -> Lanczos /2 (2K candidate)
+         -> RealESRNet 4x -> Lanczos /2 (4K result).
+This is a reconstruction, not recovered true high-resolution detail. Tiny
+silhouette features are simplified. No image-gen/diffusion repainting was used.
+
+Reproduce with Python + Pillow (12.3.0 used), official NCNN Windows binaries
+and the realesrnet-x4plus.bin/.param model files:
+python scripts/upscale-background.py --source reference/original-assets/pond.jpg --tool-dir PATH_TO_NCNN --output PATH_TO_RESULTS
+The script writes pond-atlas-4x.png; this is the approved source for map extraction.
+
+Engine bundle:
+https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip
+Smooth model bundle (copy realesrnet-x4plus.* into the engine's models folder):
+https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/realesrgan-ncnn-vulkan-20210901-windows.zip
+Project: https://github.com/xinntao/Real-ESRGAN
+Inference: https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+Hashes and first-stage candidate records: reference/derived/background-upscale.json.
+
+The repository includes derived artwork and our reproduction script, not model
+weights or third-party binaries. AOSP image attribution remains in NOTICE.txt.

@@ -17,18 +17,22 @@ const WaterRenderer={async create(canvas,world,options){
   const contact=program(WaterShaders.contact);
   const leaf=program(WaterShaders.leaf);
   async function load(src){const image=new Image();await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('素材加载失败'));image.src=src;});return image;}
-  function texture(image){
+  function texture(image,mipmaps=false){
     const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);
     for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
     for(const key of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,key,gl.CLAMP_TO_EDGE);
+    if(mipmaps){gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);}
     return tex;
   }
   const [pondImage,leafImage,canopyImage,contactImage,shadowImage]=await Promise.all([
     load(WaterAssets.pond),load(WaterAssets.leaves),load(WaterMaps.canopy),load(WaterMaps.contact),load(WaterMaps.shadow)
   ]);
-  const pond=texture(pondImage),leaves=texture(leafImage),waterSnapshot=texture(pondImage);
+  const pond=texture(pondImage,true),leaves=texture(leafImage),waterSnapshot=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,waterSnapshot);
+  for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
+  for(const key of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,key,gl.CLAMP_TO_EDGE);
   const canopy=texture(canopyImage),contactField=texture(contactImage),shadows=texture(shadowImage);
   const contactSurface=gl.createBuffer(),contactSamples=new Float32Array(12);
   gl.bindBuffer(gl.ARRAY_BUFFER,contactSurface);gl.bufferData(gl.ARRAY_BUFFER,contactSamples.byteLength,gl.DYNAMIC_DRAW);
@@ -53,15 +57,26 @@ const WaterRenderer={async create(canvas,world,options){
     crop=[(960-cw)/2048,(224+(800-ch)/2)/1024,cw/1024,ch/1024];
   }
   function attribute(location,buffer,size){gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,size,gl.FLOAT,false,0,0);}
+  // Shared by art, shadow and meniscus: one persistent resting pose + the same wave response.
+  function pose(l){
+    const axis=S.leaf.axes[l.sprite],state=l.contactState,rest=S.contact.poses[state];
+    const lift=[axis[0]*rest[0]-axis[1]*rest[1],axis[1]*rest[0]+axis[0]*rest[1]];
+    const resting=l.altitude===0?S.contact.restTilt*l.restLift:0;
+    const c=Math.cos(l.angle),s=Math.sin(l.angle);
+    const tiltX=(options.motion&&l.altitude===0?l.slopeX:0)+(lift[0]*c+lift[1]*s)*resting;
+    const tiltY=(options.motion&&l.altitude===0?l.slopeY:0)+(lift[0]*s-lift[1]*c)*resting;
+    return {lift,tiltX,tiltY,angle:l.angle+tiltX*S.leaf.turn,
+      y:l.y+(options.motion&&l.altitude===0?l.bob*S.leaf.bob:0)};
+  }
   function drawLeaf(l,shadow){
     const a=l.altitude,opacity=Math.min(1,Math.max(0,(.65-a)/.24));
-    const motion=options.motion,contact=a===0;
-    const tiltX=motion&&a===0?l.slopeX:0,tiltY=motion&&a===0?l.slopeY:0;
-    const offsetX=shadow?(.008-LIGHT[0]*a*.24):0;
-    const offsetY=shadow?(-.012-LIGHT[1]*a*.24):(motion?l.bob*S.leaf.bob:0);
-    gl.uniform2f(leaf.center,l.x+offsetX,l.y+offsetY);
+    const contact=a===0,{lift,tiltX,tiltY,angle,y}=pose(l);
+    const offsetX=shadow?-LIGHT[0]*(.02+a*.24):0;
+    const offsetY=shadow?-LIGHT[1]*(.02+a*.24):0;
+    gl.uniform2f(leaf.center,l.x+offsetX,y+offsetY);
     gl.uniform2f(leaf.tilt,tiltX,tiltY);
-    gl.uniform1f(leaf.angle,l.angle+(motion?tiltX*S.leaf.turn:0));
+    gl.uniform1f(leaf.angle,angle);
+    gl.uniform2fv(leaf.liftAxis,lift);gl.uniform1f(leaf.restLift,contact?l.restLift:0);
     gl.uniform1f(leaf.size,LEAF_SIZE*l.scale*(shadow?1.025+a*.12:1));
     gl.uniform1f(leaf.perspective,shadow?1:2/(2-a));
     gl.uniform1f(leaf.sprite,l.sprite);gl.uniform1f(leaf.shadow,shadow?1:0);
@@ -70,9 +85,7 @@ const WaterRenderer={async create(canvas,world,options){
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
   function drawContact(l){
-    const tiltX=options.motion?l.slopeX:0,tiltY=options.motion?l.slopeY:0;
-    const angle=l.angle+tiltX*S.leaf.turn,size=LEAF_SIZE*l.scale,c=Math.cos(angle),s=Math.sin(angle);
-    const y=l.y+(options.motion?l.bob*S.leaf.bob:0),extent=size*191/127;
+    const {tiltX,tiltY,angle,y}=pose(l),size=LEAF_SIZE*l.scale,c=Math.cos(angle),s=Math.sin(angle),extent=size*191/127;
     let i=0;
     for(const [px,py] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
       let qx=(px*c-py*s)*extent,qy=(px*s+py*c)*extent;
@@ -82,6 +95,7 @@ const WaterRenderer={async create(canvas,world,options){
     gl.bindBuffer(gl.ARRAY_BUFFER,contactSurface);gl.bufferSubData(gl.ARRAY_BUFFER,0,contactSamples);
     gl.uniform2f(contact.center,l.x,y);gl.uniform2f(contact.tilt,tiltX,tiltY);
     gl.uniform1f(contact.angle,angle);gl.uniform1f(contact.size,size);gl.uniform1f(contact.sprite,l.sprite);
+    gl.uniform1f(contact.contactState,l.contactState);gl.uniform1f(contact.wetness,options.motion?l.wetness:1);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
   function drawWater(){
