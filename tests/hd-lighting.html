@@ -1,7 +1,7 @@
 <!doctype html><html><meta charset="utf-8"><title>Water HD lighting checks</title>
 <style>body{background:#152833;color:#eef3ed;font:15px/1.5 monospace}canvas{width:640px;height:360px}pre{white-space:pre-wrap}</style>
 <pre id="results">Running…</pre><canvas id="water"></canvas>
-<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/wind.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
 <script>
 (async()=>{
   const results=document.getElementById('results'),canvas=document.getElementById('water'),lines=[];
@@ -33,6 +33,10 @@
   options.lighting=true;options.motion=false;const still=pixels();world.leaves[0].slopeX=.25;world.leaves[0].slopeY=-.2;
   check(difference(still,pixels())===0,'motion switch is independent of leaf lighting');
   options.motion=true;check(difference(still,pixels())>0,'leaf pose responds when motion is enabled');
+  world.triggerBreeze('gentle');world.update(WaterSettings.wind.gusts.gentle.duration/2);
+  const windy=pixels();world.breezeEnabled=false;const calm=pixels();
+  check(difference(windy,calm)>0,'shared breeze changes rendered water at gust peak');
+  world.breezeEnabled=true;check(difference(windy,pixels())===0,'paused breeze comparison restores the exact rendered frame');
   check(gl.getError()===0,'WebGL reports no errors');
   results.textContent+='\nDONE';
 })().catch(e=>{document.getElementById('results').textContent+='\nERROR '+e.message;console.error(e);});

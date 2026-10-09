@@ -1,0 +1,4 @@
+#controls{position:fixed;bottom:20px;left:20px;max-width:calc(100% - 72px);padding:14px 16px;background:#10252ae8;border:1px solid #dae7dd38;border-radius:9px;color:#e4ece5;box-shadow:0 4px 24px #0002;font-size:13px}
+#controls[hidden]{display:none}#controls p{margin:0 0 10px;color:#bbccc8;line-height:1.6}#controls strong{color:#f0f1dd;letter-spacing:.03em}button{font:inherit;min-height:36px;margin:2px 6px 0 0;padding:5px 10px;color:#eef1e6;background:#ffffff12;border:1px solid #bdcec955;border-radius:5px;cursor:pointer}button[aria-pressed=true]{background:#c6d5b627;color:#eff6d9}button:focus-visible{outline:2px solid #e4db9a;outline-offset:2px}#fps{font-variant-numeric:tabular-nums;float:right;margin-left:16px;color:#b3c3bc}
+.control-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:5px}.control-group>span{width:32px;color:#abc0bc;margin-right:6px}
+#controls #breeze-status{margin:8px 0 0 42px;font-variant-numeric:tabular-nums}

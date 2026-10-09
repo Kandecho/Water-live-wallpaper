@@ -1,29 +1,70 @@
 <!doctype html><html><meta charset="utf-8"><title>Water HD engine lifecycle checks</title>
 <style>body{font:14px monospace}#water{width:640px;height:360px}#controls{display:none}pre{white-space:pre-wrap}</style>
-<pre id="results">Running…</pre><canvas id="water"></canvas><p id="error" hidden></p><aside id="controls"><div id="feature-controls"></div><span id="fps"></span></aside>
-<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<pre id="results">Running…</pre><canvas id="water"></canvas><p id="error" hidden></p>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/wind.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
 <script>
 (async()=>{
   const out=document.getElementById('results'),lines=[];
   function check(ok,message){lines.push((ok?'PASS':'FAIL')+' '+message);out.textContent=lines.join('\n');if(!ok)throw Error(message);}
   const frames=n=>new Promise(resolve=>{function next(){if(--n===0)resolve();else requestAnimationFrame(next);}requestAnimationFrame(next);});
-  let world,draws=0,ready;
+  const isPreview=!new URLSearchParams(location.search).has('wallpaper');
+  let world,options,draws=0,ready;
   const firstDraw=new Promise(resolve=>ready=resolve),Original=WaterHD.World,create=WaterRenderer.create;
   WaterHD.World=class extends Original{constructor(...args){super(...args);world=this;}};
-  WaterRenderer.create=async(...args)=>{const r=await create(...args);return {...r,draw(){r.draw();draws++;ready();}};};
+  WaterRenderer.create=async(...args)=>{options=args[2];const r=await create(...args);return {...r,draw(){r.draw();draws++;ready();}};};
+  history.replaceState(null,'',location.pathname+(isPreview?'?preview=1':'?wallpaper=1&wind=rare'));
   const script=document.createElement('script');script.src='../wallpaper-hd/app.js';document.body.append(script);
   await firstDraw;
   window.wallpaperPropertyListener.setPaused(true);const frozen=world.time,before=draws;await frames(6);
   check(world.time===frozen&&draws===before,'engine pause stops simulation and drawing');
   window.wallpaperPropertyListener.setPaused(false);await frames(6);
   check(world.time>frozen&&draws>before,'engine resume advances again');
+  if(!isPreview){
+    check(!document.getElementById('controls')&&!document.querySelector('script[src$="preview-controls.js"],link[href$="preview-controls.css"]'),'ordinary wallpaper does not load preview UI or styles');
+    check(Object.keys(world.wind.next).join(',')==='gentle,strong'&&!('windProfile' in world),'ordinary wallpaper schedules both gust types with no mode selection');
+    const defaults=JSON.stringify(options),activeTime=world.time;
+    for(const code of ['KeyH','Space',...WaterSettings.features.map(f=>f.code)])window.dispatchEvent(new KeyboardEvent('keydown',{code}));
+    await frames(4);
+    check(JSON.stringify(options)===defaults&&world.time>activeTime&&!document.getElementById('controls'),'preview shortcuts cannot change or pause ordinary wallpaper');
+    window.wallpaperPropertyListener.setPaused(true);out.textContent+='\nDONE';return;
+  }
   document.getElementById('pause').click();const paused=world.time;await frames(3);
   const comparison=draws;document.getElementById('canopy').click();
   check(world.time===paused&&draws===comparison+1,'paused comparison redraws without advancing time');
+  world.triggerBreeze('gentle');world.update(WaterSettings.wind.gusts.gentle.duration/2);
+  const gustTime=world.time,leafState=JSON.stringify(world.leaves),windDraws=draws;
+  const gust=world.sample(.23,-.4,[]),windButton=document.getElementById('breeze');windButton.click();
+  check(!world.breezeEnabled&&windButton.getAttribute('aria-pressed')==='false','breeze control updates simulation and accessible state');
+  check(JSON.stringify(world.sample(.23,-.4,[]))!==JSON.stringify(gust),'paused breeze switch changes the water');
+  window.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyG'}));
+  check(world.breezeEnabled&&JSON.stringify(world.sample(.23,-.4,[]))===JSON.stringify(gust),'G restores the shared gust at the same time');
+  check(world.time===gustTime&&JSON.stringify(world.leaves)===leafState&&draws===windDraws+2,'breeze comparison redraws without moving leaves or advancing time');
+  check(!document.getElementById('wind-profile'),'exclusive profile selector is absent');
+  const active=world.wind.active;
+  document.getElementById('trigger-strong').click();
+  check(world.wind.active===active&&world.wind.next.strong<=world.time&&world.time===gustTime&&JSON.stringify(world.leaves)===leafState,'manual strong request queues without interrupting light wind or jumping the scene');
+  document.getElementById('pause').click();
+  document.getElementById('trigger-gentle').click();
+  check(world.wind.active===active&&world.sampleBreeze().strength===1,'repeated light request does not restart the current gust');
+  document.getElementById('pause').click();
+  world.update(active.end-world.time);
+  check(!world.wind.active,'light gust ends before strong gust starts');
+  world.update(world.wind.readyAt-world.time);
+  check(world.wind.active.kind==='strong','queued strong gust starts after the quiet gap');
+  check(!document.getElementById('bending'),'rejected bending control is absent');
   document.getElementById('canopy').click();document.getElementById('pause').click();
   window.wallpaperPropertyListener.applyGeneralProperties({fps:15});
   const start=performance.now(),count=draws;await frames(24);const elapsed=performance.now()-start;
   check(draws>count&&draws-count<=Math.ceil(elapsed*.015)+2,`engine FPS cap respected (${draws-count} draws / ${Math.round(elapsed)} ms)`);
+  window.wallpaperPropertyListener.setPaused(true);
+  document.getElementById('pause').click();document.getElementById('breeze').click();
+  const manualTime=world.time,manualLeaves=JSON.stringify(world.leaves);
+  document.getElementById('trigger-gentle').click();
+  check(world.breezeEnabled&&world.wind.next.gentle<=manualTime&&document.getElementById('pause').getAttribute('aria-pressed')==='false','manual button enables wind, queues light wind and resumes user pause');
+  check(world.time===manualTime&&JSON.stringify(world.leaves)===manualLeaves&&document.getElementById('breeze-status').textContent.includes('轻风等待中'),'queued request preserves time and leaves and shows pending status');
+  await frames(3);check(world.time===manualTime,'manual trigger still respects engine pause');
+  window.wallpaperPropertyListener.setPaused(false);await frames(8);
+  check(world.time>manualTime&&world.sampleBreeze().strength>0,'manual gust grows immediately after resume');
   window.wallpaperPropertyListener.setPaused(true);out.textContent+='\nDONE';
 })().catch(e=>{document.getElementById('results').textContent+='\nERROR '+e.message;console.error(e);});
 </script></html>

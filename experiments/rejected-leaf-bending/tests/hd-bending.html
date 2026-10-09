@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Water HD local bending checks</title>
+<style>body{margin:0;background:#152833;color:#eef3ed;font:14px/1.5 monospace}canvas{display:block;width:1280px;height:720px}pre{padding:16px;white-space:pre-wrap}</style>
+<pre id="results">Running…</pre><canvas id="water"></canvas>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script>
+(async()=>{
+  const out=document.getElementById('results'),canvas=document.getElementById('water'),lines=[];
+  function check(ok,message){lines.push((ok?'PASS':'FAIL')+' '+message);out.textContent=lines.join('\n');if(!ok)throw Error(message);}
+  const world=new WaterHD.World(16/9,()=>.42),options=Object.fromEntries(WaterSettings.features.map(f=>[f.key,f.enabled]));
+  world.waves=[];world.time=2;world.leaves=world.leaves.slice(0,8);options.motion=false;
+  world.leaves.forEach((l,i)=>Object.assign(l,{sprite:i,x:(i%4-1.5)*1.42,y:i<4?.8:-.8,scale:.82,angle:0,bend:WaterSettings.bend.max}));
+  const renderer=await WaterRenderer.create(canvas,world,options);renderer.resize(1280,720,1);
+  const gl=canvas.getContext('webgl'),draw=gl.drawArrays.bind(gl);let mode='all',triangles=0;
+  gl.drawArrays=(primitive,...args)=>{
+    if(primitive===gl.TRIANGLES){triangles++;if(mode==='contact'||(mode==='shadow'&&triangles>world.leaves.length)||(mode==='color'&&triangles<=world.leaves.length))return;}
+    draw(primitive,...args);
+  };
+  function pixels(){triangles=0;renderer.draw();const p=new Uint8Array(1280*720*4);gl.readPixels(0,0,1280,720,gl.RGBA,gl.UNSIGNED_BYTE,p);return p;}
+  function difference(a,b){let sum=0;for(let i=0;i<a.length;i++)sum+=Math.abs(a[i]-b[i]);return sum;}
+  function leafDifference(a,b,index){
+    let sum=0;const x0=index%4*320,y0=index<4?0:360;
+    for(let y=y0;y<y0+360;y++)for(let x=x0;x<x0+320;x++){
+      const k=(y*1280+x)*4;for(let c=0;c<3;c++)sum+=Math.abs(a[k+c]-b[k+c]);
+    }
+    return sum;
+  }
+  for(const state of [0,1,2])for(const altitude of [0,.3]){
+    world.leaves.forEach(l=>Object.assign(l,{contactState:state,altitude}));
+    options.bending=false;const rigid=pixels();options.bending=true;const bent=pixels();
+    check(difference(rigid,bent)>1000,`eight sprites deform with pose ${state}, altitude ${altitude}`);
+    options.bending=false;check(difference(rigid,pixels())===0,'F-off comparison restores exactly');options.bending=true;
+  }
+  world.leaves.forEach(l=>Object.assign(l,{contactState:0,altitude:0}));
+  options.lighting=false;options.contact=false;mode='color';
+  options.bending=false;const unlit=pixels();options.bending=true;
+  const deformed=pixels();
+  for(let i=0;i<8;i++)check(leafDifference(unlit,deformed,i)>100,`sprite ${i} visibly deforms without lighting, shadow or contact cues`);
+  options.lighting=true;
+  mode='shadow';options.bending=false;const flatShadow=pixels();options.bending=true;
+  check(difference(flatShadow,pixels())>100,'shadow follows the local curl');
+  mode='contact';options.contact=true;options.bending=false;const flatContact=pixels();options.bending=true;
+  check(difference(flatContact,pixels())>20,'meniscus field follows the same local curl');
+  mode='all';options.leaves=false;const pond=pixels();options.bending=false;
+  check(difference(pond,pixels())===0,'bending never changes the background water');
+  options.leaves=true;options.bending=true;
+  world.leaves.forEach(l=>l.bend=0);const zero=pixels();options.bending=false;
+  check(difference(zero,pixels())===0,'zero curvature exactly matches disabled bending');
+  world.leaves.forEach(l=>l.bend=WaterSettings.bend.max);options.bending=true;
+  const snapshot=pixels();check(gl.getError()===0,'all bending passes report zero GL errors');
+  // Stable screenshots for visual review of the actual shaders, not generated art.
+  window.bendingReview={world,options,renderer,pixels};
+  out.textContent+='\nDONE';
+})().catch(e=>{document.getElementById('results').textContent+='\nERROR '+e.message;console.error(e);});
+</script></html>

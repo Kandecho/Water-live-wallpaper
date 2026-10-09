@@ -1,16 +1,13 @@
 <!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Water (Autumn Leaves) HD — Preview 1</title>
+<title>Water (Autumn Leaves) HD 1.0.0 — Random Wind</title>
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#203c58;font-family:system-ui,sans-serif}
 canvas{display:block;width:100%;height:100%;touch-action:none;outline-offset:-4px}
 #error{position:fixed;inset:40% 10% auto;color:white;background:#162832;padding:20px;line-height:1.6}
-#controls{position:fixed;bottom:20px;left:20px;max-width:calc(100% - 72px);padding:14px 16px;background:#10252ae8;border:1px solid #dae7dd38;border-radius:9px;color:#e4ece5;box-shadow:0 4px 24px #0002;font-size:13px}
-#controls[hidden]{display:none}#controls p{margin:0 0 10px;color:#bbccc8;line-height:1.6}#controls strong{color:#f0f1dd;letter-spacing:.03em}button{font:inherit;min-height:36px;margin:2px 6px 0 0;padding:5px 10px;color:#eef1e6;background:#ffffff12;border:1px solid #bdcec955;border-radius:5px;cursor:pointer}button[aria-pressed=true]{background:#c6d5b627;color:#eff6d9}button:focus-visible{outline:2px solid #e4db9a;outline-offset:2px}#fps{font-variant-numeric:tabular-nums;float:right;margin-left:16px;color:#b3c3bc}
-.control-group{display:flex;align-items:center;gap:4px;margin-top:5px}.control-group>span{width:32px;color:#abc0bc;margin-right:6px}
 </style>
-<canvas id="water" tabindex="0" aria-label="Water HD。点击水面泛起涟漪，按住拖动留下水纹；空格暂停，H 显示对照面板。"></canvas>
+<canvas id="water" tabindex="0" aria-label="Water HD。点击水面泛起涟漪，按住拖动留下水纹。"></canvas>
 <p id="error" role="alert" hidden></p>
-<aside id="controls" hidden aria-label="预览对照面板"><p><strong>WATER HD · PREVIEW 1</strong><span id="fps">— FPS</span><br>4K 背景 · 高清原版叶子 · 点击 / 拖动 · 空格暂停 · H 隐藏</p><div id="feature-controls"></div></aside>
-<script src="assets.js"></script><script src="maps.js"></script><script src="settings.js"></script><script src="world.js"></script><script src="shaders.js"></script><script src="renderer.js"></script><script src="app.js"></script>
+
+<script src="assets.js"></script><script src="maps.js"></script><script src="settings.js"></script><script src="wind.js"></script><script src="world.js"></script><script src="shaders.js"></script><script src="renderer.js"></script><script src="app.js"></script>
 </html>

@@ -3,7 +3,7 @@
 <canvas id="water"></canvas><aside><div>Same leaf · fixed angle · normal drift speed · <output id="time">0 s</output></div>
 <button id="advance">Advance 4 s</button><button id="reset">Reset</button><button id="toggle">Canopy: on</button>
 <div><figure><canvas id="open" width="140" height="140"></canvas><figcaption>Without canopy · enlarged</figcaption></figure><figure><canvas id="shade" width="140" height="140"></canvas><figcaption>With canopy · enlarged</figcaption></figure></div><pre id="results">Loading…</pre></aside>
-<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
+<script src="../wallpaper-hd/assets.js"></script><script src="../wallpaper-hd/maps.js"></script><script src="../wallpaper-hd/settings.js"></script><script src="../wallpaper-hd/wind.js"></script><script src="../wallpaper-hd/world.js"></script><script src="../wallpaper-hd/shaders.js"></script><script src="../wallpaper-hd/renderer.js"></script>
 <script>
 (async()=>{
   const canvas=document.getElementById('water'),world=new WaterHD.World(16/9,()=>.42);

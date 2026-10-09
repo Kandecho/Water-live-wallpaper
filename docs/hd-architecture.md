@@ -1,18 +1,48 @@
-# Water HD architecture
+# Water HD architecture — 1.0.0
 
-HD Preview 1 keeps prepared images, compact state and analytic motion, rendered
+[HTML diagram (中文)](hd-architecture.html) · [Diagram source](hd-architecture.zh-CN.md)
+
+HD keeps prepared images, compact state and analytic motion, rendered
 with plain JavaScript and WebGL 1. There is no fluid solver or runtime image
 extraction. The classic `wallpaper/` release remains independent.
+
+## Design baseline: keep the original's small, direct pipeline
+
+The preserved AOSP [FallRS.java](../reference/upstream/FallRS.java) prepares
+programs, a mesh and textures in `createScript()`. [fall.rs](../reference/upstream/fall.rs)
+keeps 14 leaves and ten ripple slots, computes ripple heights and texture offsets,
+then draws the pond and leaf quads in order. Its main function uses elapsed time
+capped at 0.2 seconds and requests the next frame after 30 milliseconds.
+
+HD follows these principles with three core responsibilities:
+
+- **app drives:** one animation loop, input and engine integration.
+- **world updates:** one scene clock, small leaf/wave arrays and one wind scheduler.
+- **renderer draws:** prepared textures, explicit shader programs and ordered passes.
+
+`wind.js` belongs to the scene's scheduling responsibility; `shaders.js` belongs
+to rendering. Settings and generated resources are inputs, while preview controls
+are an optional client of the existing scene interfaces. These roles do not need
+an entity framework, message bus, generic render graph or another service layer.
+Keep small helpers in their owning module instead of splitting by function name.
+
+The HD additions have concrete costs: analytic normals, shared floating poses,
+offline lighting/contact maps and one GPU water copy when contacts are enabled.
+They preserve the quad-based leaves and formula-based water. Asset reconstruction
+and map generation stay offline. This is an architecture clarification of the
+current implementation; it does not change the accepted visual behavior.
 
 ## Responsibilities
 
 | File | Responsibility |
 | --- | --- |
 | `settings.js` | Artistic controls, offline canopy calibration, pose definitions and feature switches. |
-| `world.js` | Leaf lifetime/drift, stable wet/dry pose, analytic waves and delayed response. |
+| `wind.js` | Random wait timers, deferred gusts, quiet gaps, fixed per-gust direction and pulse envelope. |
+| `world.js` | Leaf lifetime/drift, stable wet/dry pose, analytic waves and delayed wind response; splits updates at gust boundaries. |
 | `shaders.js` | Water, contact and leaf/shadow programs, with a shared leaf transform. |
 | `renderer.js` | Textures, mesh, resize and ordered passes. One resting/wave pose is computed per leaf per frame and reused across leaves, shadows and contacts. |
-| `app.js` | Input, preview controls, timer and engine pause/FPS hooks. |
+| `app.js` | Input, timer and engine pause/FPS hooks; loads comparison controls only in preview mode. |
+| `preview-controls.js` / `.css` | Preview-only controls, shortcuts and status display. No persistent configuration. |
 | `assets.js` | Generated embedded 4K pond and 512px reconstructed AOSP leaf cells. |
 | `maps.js` | Generated embedded canopy, wet/dry contact variants and shadow textures. |
 
@@ -22,7 +52,31 @@ in the wallpaper. The pond and leaf color atlases use mipmaps to reduce minifica
 and high-precision texture coordinates where supported. Images remain embedded
 for offline use, including direct local-file loading.
 
+## State ownership and frame lifecycle
+
+`app` owns pause/input/FPS state and calls `world.update(dt)` on active animation
+callbacks. It calls `renderer.draw()` only when the render budget allows.
+`world` owns simulation time, leaves, waves, surface samples and its `wind`
+instance. The scheduler owns due times, at most one active gust and the quiet-gap
+deadline. Its independent random stream changes only at scheduling events.
+
+During drawing, the renderer requests the world mesh and local water samples;
+these reads never advance time or draw new random values. It computes each leaf's
+pose once and reuses it for contacts, shadows and artwork. The renderer owns GPU
+resources and calls `world.resize()` when the viewport changes. Resizing updates
+coordinates and grids without advancing simulation time.
+
+Preview controls request existing world actions and ask the app to redraw or
+reset its clock. They do not own a second simulation or persistent settings.
+This allows frozen-time visual comparisons and direct Node tests of world/wind
+without loading a browser or WebGL.
+
 ## Settings and interaction
+
+The [parameter reference (中文)](configuration.zh-CN.md) lists defaults, units,
+constraints and reload/offline rebuild requirements. Normal `index.html` uses
+file configuration and has no settings UI or preview shortcuts. Only preview
+mode loads the controls module and stylesheet; its changes are not saved.
 
 `light.direction` supplies water/leaf lighting, shadow direction and the offline
 canopy shift. `light.canopy` groups extraction thresholds, blur, levels, projection
@@ -32,6 +86,8 @@ three poses and bounded wave response. `leaf` holds sprite roots and vein axes.
 
 The feature list generates defaults, panel groups and keys: C lighting, S canopy,
 B wave-driven motion, T menisci, L leaves. Space pauses; H shows/hides the panel.
+G compares all wind effects on/off.
+The preview buttons request gentle or strong gusts through the shared queue.
 Switches redraw while paused without advancing time. Disabling motion retains
 the leaf's resting wet/dry pose.
 
@@ -99,6 +155,8 @@ lighting. There is no independent leaf oscillator, diffraction or wetting solver
 
 ```sh
 node tests/hd-world.cjs
+node tests/hd-breeze.cjs
+node tests/hd-wind-scheduler.cjs
 node tests/hd-contact.cjs
 python tests/hd-art.py
 python scripts/build-hd-maps.py --check
@@ -113,6 +171,9 @@ derivatives for all pose rows. Browser pages served from the repository:
 - `tests/hd-lighting.html`: position sampling, independent switches, and no
   Canvas2D contexts during runtime initialization.
 - `tests/hd-lifecycle.html`: engine pause/resume, FPS cap and paused redraws.
+  Includes breeze button/keyboard state and frozen-time water comparisons.
+  Append `?wallpaper=1` to check normal mode has no preview controls/shortcuts
+  while engine pause/resume still works.
 - `tests/hd-contact-sequence.html`: all eight sprites at 1.67× normal size,
   quarter-second steps and wet/raised-petiole comparisons.
 - `tests/hd-shade-sequence.html`: one fixed-angle leaf on a 24-second path at
@@ -122,8 +183,49 @@ derivatives for all pose rows. Browser pages served from the repository:
 Browser checks do not establish native-engine compatibility or sustained 4K
 performance. Leaf shape remains anchored to the original alpha; reconstructed detail is not ground truth.
 
-## Scope after Preview 1
+## Random wind in one scene
 
-Keep the accepted preview as a baseline. Experiment next with shared gentle
-gusts, then a small locally deformable leaf mesh. Direct leaf-pushing input
-is not planned; the wallpaper should stay quiet in the background.
+`settings.wind.gusts` defines gentle and strong gusts. Initial waits are sampled
+at startup. When a type ends, only that type draws its next wait: gentle 25–45
+seconds, strong 150–240. Durations remain 13 and 10 seconds. Strong wind retains
+0.030 wave height, 0.11 drift speed, 0.55-second response and 0.85 airborne spin;
+gentle wind retains 0.010, 0.045, 0.65 and 0.5 respectively.
+
+Only one gust is active. The other type keeps its original due time if delayed.
+Every completed gust draws a 2–5 second quiet gap. After the gap, the earliest
+overdue type starts; exact ties use definition order (gentle first). There is
+at most one pending event per type. Next waits begin at actual completion,
+so repeated overdue events never accumulate.
+
+Each start draws a uniform direction from 0 to 2π, fixed throughout that gust.
+Water waves and leaf drift share the direction. The sine-squared envelope rises
+and falls smoothly. Leaf velocity follows with integrated exponential easing;
+airborne spin follows the leaf's existing turn sign and fades before landing.
+During quiet time, the last gust's response parameters govern the remaining
+velocity decay. Turning wind off removes its water contribution and eases drift
+toward zero; the schedule continues with simulation time. Pausing stops both.
+
+The scheduler owns a separate random stream seeded once after initial leaves
+are created. Leaf recycling, ambient ripples and redraw counts cannot change
+future wind. Sampling is read-only. World updates split at exact start/end
+boundaries, avoiding frame-quantized timing and preserving the event sequence
+at 15/30/60/144 Hz. No new textures or GPU passes are needed.
+
+Preview requests bring a type's due time forward without interrupting active
+wind or skipping a quiet gap. A request for the active type does nothing;
+duplicate waiting requests do not accumulate. Manual and automatic gusts use
+the same duration and peak timing. One package contains this complete behavior;
+there is no profile selector, wind query override or production configuration UI.
+
+`tests/hd-wind-scheduler.cjs` checks collisions, quiet gaps, rescheduling, fairness,
+direction stability, read-only sampling, repeated requests and exact schedules
+across frame rates. `tests/hd-breeze.cjs` checks derivatives, stronger drift,
+paused comparisons, six-minute mixed-wind trajectories and airborne landing.
+
+## Rejected local bending
+
+The local mesh-curl experiment was rejected on 2026-10-09 because the visible
+stretching felt artificial. It is preserved with its complete runnable source,
+notes and focused tests in [the archive](../experiments/rejected-leaf-bending/README.md).
+The active runtime retains the accepted quad-based leaf/shadow renderer
+and original contact-field lookup. There is no curvature state or F control.

@@ -39,18 +39,28 @@ by frame to a particular Samsung Galaxy firmware.
 
 ## HD implementation
 
-See [HD architecture](hd-architecture.md) for runtime responsibilities,
-settings, lighting, contact and offline map extraction. Asset provenance is
+See [HD architecture](hd-architecture.md) for runtime responsibilities (and [the HTML diagram](hd-architecture.html)),
+settings, lighting, contact and offline map extraction, and the
+[parameter reference (中文)](configuration.zh-CN.md) for defaults, units and editing examples. Asset provenance is
 recorded in [background-upscale.txt](background-upscale.txt) and
 [leaf-upscale.txt](leaf-upscale.txt). The original AOSP images remain intact.
 
 The preview panel groups the visual switches. C toggles lighting, S canopy
 shade, B wave-driven leaf motion, T menisci and L leaves. H toggles the panel;
 Space pauses. Switches redraw without advancing time while paused.
+G toggles all wind effects. Gentle and strong gusts occur randomly in the same
+scene. They have independent waits, never overlap, and choose a fixed random
+direction per gust. See the parameter reference for timing and queue semantics.
+The preview has separate light/strong request buttons. Requests use the normal
+queue, duration and quiet gap; repeated requests do not restart or stack gusts.
+User pause is resumed by a request, while engine pause remains respected.
+Local bending remains preserved in
+[the experiment archive](../experiments/rejected-leaf-bending/README.md).
 
-Space and H remain available in the HD preview for visual review, but are not
-advertised in the user README. Remove these two user-facing shortcuts before
-the HD stable release. Keep the wallpaper engine's pause/resume integration.
+Controls and shortcuts load only with `?preview=1` (used by the preview pages).
+Normal `index.html` has no panel or preview shortcuts; H cannot reveal one.
+Edit `settings.js` and reload for lasting changes. The wallpaper engine's
+pause/resume and FPS integration remain available in both modes.
 
 ## Build packages
 
@@ -62,9 +72,11 @@ pwsh -NoProfile -File scripts/package-hd.ps1
 ```
 
 The Classic script creates separate Sucrose and Lively ZIPs. The HD script
-creates one ZIP with metadata for all three apps and a SHA-256 checksum file.
-Runtime files sit at the archive root. Attach packages to the corresponding
-GitHub release; keep stable and HD preview releases separate.
+creates one ZIP containing both random gust types, metadata for all three apps,
+and `CONFIGURATION.zh-CN.md`, plus a checksum file. Settings are copied unchanged.
+Runtime files sit at the archive root. HD 1.0.0 ships this random-wind behavior
+as one package on GitHub Releases under `hd-v1.0.0`. Use the independent
+`hd-v<version>` tag series for HD; Classic and its Workshop project are separate.
 
 ## Checks
 
@@ -80,6 +92,8 @@ HD, with Node.js and Python + Pillow:
 
 ```sh
 node tests/hd-world.cjs
+node tests/hd-breeze.cjs
+node tests/hd-wind-scheduler.cjs
 node tests/hd-contact.cjs
 python tests/hd-art.py
 python scripts/build-hd-maps.py --check
