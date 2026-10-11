@@ -98,6 +98,7 @@ node tests/hd-world.cjs
 node tests/hd-breeze.cjs
 node tests/hd-wind-scheduler.cjs
 node tests/hd-contact.cjs
+node tests/hd-input.cjs
 python tests/hd-art.py
 python scripts/build-hd-maps.py --check
 ```

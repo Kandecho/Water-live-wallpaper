@@ -15,6 +15,7 @@
     applyGeneralProperties(p){if(p.fps>0){fpsLimit=Math.min(config.render.maxFPS,p.fps);resetClock();}}
   };
   document.addEventListener('visibilitychange',resetClock);
+  window.addEventListener('blur',()=>{pointer=null;});
   function point(e){const r=canvas.getBoundingClientRect();return {u:(e.clientX-r.left)/r.width,v:(e.clientY-r.top)/r.height,t:world.time};}
   canvas.addEventListener('pointerdown',e=>{
     if(e.button!==0||inactive())return;
@@ -23,6 +24,8 @@
   });
   canvas.addEventListener('pointermove',e=>{
     if(!pointer||pointer.id!==e.pointerId||inactive())return;
+    // Wallpaper hosts may omit pointerup when switching back to the desktop.
+    if((e.buttons&1)===0){pointer=null;return;}
     const p=point(e),distance=Math.hypot((p.u-pointer.u)*world.width,(p.v-pointer.v)*world.height);
     if(p.t-pointer.t>config.input.cadence&&distance>config.input.spacing){world.drop(p.u,p.v,config.input.dragStrength);pointer={...p,id:e.pointerId};}
   });
